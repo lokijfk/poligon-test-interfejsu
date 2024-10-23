@@ -69,6 +69,12 @@ public partial class MainWindowViewModel: ObservableObject
             //wywołać okno do wpisania nazwy, ale czy to nie trzeba będzie zmienić metodę na async?
             RActiveTreeModelItem.AddChild(new TreeModel<Guid> { Name = "AAAXXd", IsExpanded = true, Parent = RActiveTreeModelItem });
             //dodać do bazy
+            RActiveTreeModelItem = null;
+        }
+        else
+        {
+             TreeModel<Guid>? SelectedItem = TreeModel.GetSelectedNode(Tree);
+            SelectedItem.AddChild(new TreeModel<Guid> { Name = "AAAXXd", IsExpanded = true, Parent = RActiveTreeModelItem });
         }
     }
 
@@ -77,7 +83,15 @@ public partial class MainWindowViewModel: ObservableObject
     [RelayCommand]
     private void RemoveFolder(object t)
     {
-        // Value="{Binding Path=PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>
+        if (RActiveTreeModelItem != null)
+        {
+            //wywołać okno do wpisania nazwy, ale czy to nie trzeba będzie zmienić metodę na async?
+            TreeModel<Guid>? ParentItem = RActiveTreeModelItem.Parent;
+            // tu muszę dopisać usuwanie gałęzi oznaczonej jako do usunięcia ale to statyczną metodę w tree
+            //dodać do bazy
+            RActiveTreeModelItem = null;
+        }
+
     }
 
     [RelayCommand]

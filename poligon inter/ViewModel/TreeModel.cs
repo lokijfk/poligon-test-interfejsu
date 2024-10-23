@@ -27,7 +27,7 @@ public partial class TreeModel<T1> :ObservableObject
     [ObservableProperty]
     private TreeModel<T1> _Parent;
     [ObservableProperty]
-    protected ObservableCollection<TreeModel<T1>> _children;
+    private ObservableCollection<TreeModel<T1>> _children;
     [ObservableProperty]
     private T1 _selectedValue;
     [ObservableProperty]

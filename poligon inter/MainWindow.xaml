@@ -34,7 +34,7 @@
                     <Button  x:Name="NweDB" Command="{Binding CreateDBCommand}">
                         <md:PackIcon Kind="DatabasePlus" />
                     </Button>
-                    <Button x:Name="AddFolder">
+                    <Button x:Name="AddFolder" Command="{Binding AddFolderCommand}">
                         <md:PackIcon Kind="FolderPlusOutline" />
                     </Button>
                     <Button  x:Name="AddFile" >
