@@ -1,0 +1,86 @@
+﻿
+CREATE TABLE "Categories" (
+	"Name"	TEXT NOT NULL,
+	"ParentID"	INTEGER NOT NULL,
+	"Id"	INTEGER NOT NULL UNIQUE,
+	"Alter"	TEXT,
+	PRIMARY KEY("Id" AUTOINCREMENT)
+);
+
+CREATE TABLE "Gatunek" (
+	"Id"	INTEGER NOT NULL UNIQUE,
+	"Nazwa"	TEXT NOT NULL,
+	"Alter"	INTEGER,
+	"Id_typu"	INTEGER NOT NULL,
+	PRIMARY KEY("Id" AUTOINCREMENT)
+);
+
+CREATE TABLE "Katalog" (
+	"path"	,
+	"Id"	INTEGER NOT NULL UNIQUE,
+	PRIMARY KEY("Id" AUTOINCREMENT)
+);
+
+CREATE TABLE "Osoba" (
+	"Id"	INTEGER NOT NULL UNIQUE,
+	"Imie"	TEXT,
+	"Nazwisko"	TEXT,
+	"Imie2"	TEXT,
+	"Psełdonim"	TEXT,
+	"Opis"	TEXT,
+	PRIMARY KEY("Id" AUTOINCREMENT)
+);
+
+CREATE TABLE "Osoba_add" (
+	"Id_Osoba"	INTEGER NOT NULL,
+	"Nazwa"	TEXT NOT NULL,
+	"Wartosc"	TEXT,
+	"Typ_wart"	TEXT
+);
+
+CREATE TABLE "Plik" (
+	"nazwa"	varchar(255),
+	"rozszezenie"	varchar(5),
+	"id_katalog"	INTEGER NOT NULL,
+	"usuniety"	bool,
+	"MD5"	,
+	"Id"	INTEGER NOT NULL UNIQUE,
+	PRIMARY KEY("Id" AUTOINCREMENT)
+);
+
+CREATE TABLE "TypGat" (
+	"Id"	INTEGER NOT NULL UNIQUE,
+	"Nazwa"	TEXT NOT NULL,
+	PRIMARY KEY("Id" AUTOINCREMENT)
+);
+
+CREATE TABLE "Utwór" (
+	"Id"	INTEGER NOT NULL UNIQUE,
+	"Nazwa"	TEXT NOT NULL,
+	"Opis"	TEXT,
+	PRIMARY KEY("Id" AUTOINCREMENT)
+);
+
+CREATE TABLE "Utwór_Ososby" (
+	"Id"	INTEGER NOT NULL UNIQUE,
+	"Id_Osoba"	INTEGER NOT NULL,
+	"Id_Utwór"	INTEGER NOT NULL,
+	PRIMARY KEY("Id" AUTOINCREMENT),
+	FOREIGN KEY("Id_Osoba") REFERENCES "Osoba"("Id"),
+	FOREIGN KEY("Id_Utwór") REFERENCES "Utwór_Ososby"("Id")
+);
+
+CREATE TABLE "Utwór_Pliki" (
+	"Id"	INTEGER NOT NULL UNIQUE,
+	"Id_Utwór"	INTEGER NOT NULL,
+	"Id_Plik"	INTEGER NOT NULL,
+	PRIMARY KEY("Id" AUTOINCREMENT)
+);
+
+CREATE TABLE "slowniki" (
+	"nazwa"	,
+	"wartosc"	,
+	"Id"	INTEGER,
+	PRIMARY KEY("Id")
+);
+

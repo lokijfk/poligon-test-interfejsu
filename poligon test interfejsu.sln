@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35103.136
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "poligon inter", "poligon inter\poligon inter.csproj", "{DD5786F2-F7E2-4850-A78D-B75978119CD8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DD5786F2-F7E2-4850-A78D-B75978119CD8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD5786F2-F7E2-4850-A78D-B75978119CD8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD5786F2-F7E2-4850-A78D-B75978119CD8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD5786F2-F7E2-4850-A78D-B75978119CD8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D6B6560D-9F7D-44A7-8044-55662B010E6F}
+	EndGlobalSection
+EndGlobal

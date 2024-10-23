@@ -1,0 +1,71 @@
+﻿
+
+- wszystkie kategorie są podzielone na filmy, mni seriale i seriale
+- jak dodać robienie sablonu tak żeby nie trzebabyło na stałe ustawiać wszystkiego od nowa jak będę miałjakiś pomysł
+
+części wspólne wszystkiego:
+- pliki - tu film, e-book, dźwięk 
+- osoba -  aktor, autor, zespół, wykonawca - tu anomalia bo wykonawca może być częścią zespołu 
+- rok wydania - książki, filmu, albumu - nie pojawia się w priv
+- studio, wydawca, seria(priv) 
+- produkt - film, książka, uwór - nazwa, opis, okładka, kategoria, rok, ...
+- gatunek, kategoria, widownia
+- image - okładki i zdjęcia aktorów - tu id i link statyczny do pliku, pliki będą w katalogu bazy ale nie wiem jak to rozwiązać do końca
+	i nie są pokazywane w bazie (?) ale jakoś trzeba do nich dotrzeć jak coś się stanie więc musi być na to jakiś sposób wymyślony
+
+są dwa rodzaje plików
+- pliki wpisane do bazy - tylko zawa i ścieszka
+- pliki wyszukane na dyskach, mogą być oznaczone żeby ich więcej nie pokazywać (?)- tu czy wyżej (?)
+
+schemat ma określać jakie pola będą wyświetlane z widoku czy tabeli
+powinno być kilka baz i wybieramy rodzaj w trakcie tworzenia
+- filmy
+- muzyka
+- audiobuki
+- e-booki
+- gry ?
+
+!) filmy ma kilka podkategorii 
+- filmy jako filmy 
+	- lista filmów
+		- pokazuje się w kliku widokach alternatywnych
+			- szczegóły : nazwa + okładka + opis moę być obcięty jak za krótki
+			- ogólny : okładka i nazwa
+			- skrócony : nazwa
+
+	- mają okładkę, opis, tytuł w (pL) i tytuły alternatywne + w jakim to języku
+		dobrze jak jest rok produkcji i studio
+		lista aktorów, moja opinia o filmie może jakiś ranking 
+		- lista gatónków
+	- podział na filmy które mam i filmy które chcę obejżeć lub warto obejżeć
+	- aktorzy
+		- mają zdjęcie lub kilka dla łatwiejszej identyfikacji,
+		- listę filmów w których grają a które mam,
+		- listę filmów w których grają a których nie mam
+		- a warto obejżeć...
+		- jakieś notatki przy nich 
+		- ranking (?)
+	- gatunki filmowe
+		- każda kategoria wyświetla listę filmów które ją zawierają
+	- lata produkcji 
+		- to w drzewie pokazują się lata filmów które mam o ile dodam rocznik, może też lata filmów które chcę obejżeć ...
+	- pliki
+		- to lista plików dodanych do bazy, może pokazywać też do jakiego filmu jest plik dołączony
+		- jeden plik do jednego filmu i nie inaczej
+
+- filmy jako anime 
+		- tu podobnie ale nie ma aktorów, aktorzy głosowi mają rolę drugorzędną więc ich nie wymienię przynajmniej na poczatku
+		- tu gatunek czy kategoria i widowia też chyba ...
+
+- filmy jako private 		 
+		- aktorka lub aktorzy stanowią o filmie - zdjęcie w ubraniu i rozebrane, rok urodzenia, wymary, rok zakończenia kariery ...
+			filmy w których gra (te które mam), gatunki w których gra, jakieś ciekawostki o nich
+		- nie ma roczników w drzewie, nazwy są drugorzędne i są brane z nazwy plików
+		- zamiast gatunku jest kategoria i tu odpowiednio jak w xxx
+		- zamiast tytułu jest studio i seria ( seria nie występuje w dwuch studiach na raz !) i tu jest data wydania
+		-- film -studia jako sub -i do nich seriw jako sub
+
+
+
+
+			
