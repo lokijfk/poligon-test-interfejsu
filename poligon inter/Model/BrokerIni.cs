@@ -4,7 +4,7 @@ using System.Windows;
 
 namespace poligon_inter.Model
 {
-    class IniBroker
+    class BrokerIni
     {
         private IniFile? iniFile = null;
 
@@ -12,12 +12,14 @@ namespace poligon_inter.Model
         {
             if (iniFile == null)
             {
+                //to przerobić, powinno być już lokalnie a nie w tools
+                // tools należy rozłozyć na części składowe i usunąć
                 return Tools.LoadIniProject();
             }
             return iniFile;
         }
 
-        public IniBroker()
+        public BrokerIni()
         { 
             iniFile = GetIni();
         }
@@ -32,14 +34,14 @@ namespace poligon_inter.Model
         
         public int WindowTop 
         {
-            get => GetIntValue(GetCurrentMethod());
+            get => GetIntValue(GetCurrentMethod()) == 0 ? 5 : GetIntValue(GetCurrentMethod());
             set => SetIntValue(GetCurrentMethod(), value);
         }
 
 
         public int WindowLeft 
         {
-            get => GetIntValue(GetCurrentMethod());
+            get => GetIntValue(GetCurrentMethod()) == 0 ? 5 : GetIntValue(GetCurrentMethod());
             set => SetIntValue(GetCurrentMethod(), value);
         }
 
@@ -47,18 +49,19 @@ namespace poligon_inter.Model
 
         public int WindowHeight
         {
-            get => GetIntValue(GetCurrentMethod()) == 0 ? GetIntValue(GetCurrentMethod()) : 450;
+            get => GetIntValue(GetCurrentMethod()) == 0 ?  450: GetIntValue(GetCurrentMethod());
             //get => GetIntValue(GetCurrentMethod());
             set => SetIntValue(GetCurrentMethod(), value);
         }
 
         public int WindowWidth
         {
-            get => GetIntValue(GetCurrentMethod())==0? GetIntValue(GetCurrentMethod()): 800;
+            get => GetIntValue(GetCurrentMethod())==0? 800 : GetIntValue(GetCurrentMethod()) ;
             //get => GetIntValue(GetCurrentMethod());
             set => SetIntValue(GetCurrentMethod(), value);
         }
-                
+                //tu coś jest nie tak, coś wcześniej myślałem o tym i schszaniłęm ...{...}
+
         public WindowState CurMainWindowState { 
             get
             {
@@ -74,19 +77,47 @@ namespace poligon_inter.Model
             }
             set 
             {
+                /*
                 if (value.ToString() == "Maximized")
                 {
                     iniFile.SetValue("General", "LastWidth", iniFile.GetValue("WindowWidth"));
                     iniFile.SetValue("General", "LastHeihgt", iniFile.GetValue("WindowHeight"));
-                }else if(iniFile.GetValue(GetCurrentMethod()) == "Maximized")
+                }else if(value.ToString() == "Normal")
                 {
                     iniFile.SetValue("General", "WindowWidth", iniFile.GetValue("LastWidth"));
                     iniFile.SetValue("General", "WindowHeight" , iniFile.GetValue("LastHeihgt"));
-                }
+                }*/
                 iniFile.SetValue("General", GetCurrentMethod(), value.ToString());
             }
         }
 
+        public int LastWidth
+        {
+            get => GetIntValue(GetCurrentMethod()) == 0 ? 800 : GetIntValue(GetCurrentMethod());
+            //get => GetIntValue(GetCurrentMethod());
+            set => SetIntValue(GetCurrentMethod(), value);
+        }
+
+        public int LastHeihgt
+        {
+            get => GetIntValue(GetCurrentMethod()) == 0 ? 450 : GetIntValue(GetCurrentMethod());
+            //get => GetIntValue(GetCurrentMethod());
+            set => SetIntValue(GetCurrentMethod(), value);
+        }
+
+        public int LastLeft
+        {
+            get => GetIntValue(GetCurrentMethod()) == 0 ? 5 : GetIntValue(GetCurrentMethod());
+            //get => GetIntValue(GetCurrentMethod());
+            set => SetIntValue(GetCurrentMethod(), value);
+        }
+
+        public int LastTop
+        {
+            get => GetIntValue(GetCurrentMethod()) == 0 ? 5 : GetIntValue(GetCurrentMethod());
+            //get => GetIntValue(GetCurrentMethod());
+            set => SetIntValue(GetCurrentMethod(), value);
+        }
         #endregion Metody publiczne
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -100,7 +131,8 @@ namespace poligon_inter.Model
         private void SetIntValue(string met, int val) => iniFile.SetValue("General", met, val.ToString());
         private bool GetBoolValue(string mert) => iniFile.GetBoolValue("General", mert);
         private void SetBoolValue(string met, bool val) => iniFile.SetValue("General", met, val.ToString());
-
+        private string GetStringValue(string mert) => iniFile.GetStringValue("General", mert);
+        private void SetStringValue(string met, string val) => iniFile.SetValue("General", met, val);
         /*
         public static T ToEnum<T>(this string value)
         {

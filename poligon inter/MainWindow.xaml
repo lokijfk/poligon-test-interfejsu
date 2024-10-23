@@ -8,117 +8,201 @@
         xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:vm="clr-namespace:poligon_inter.ViewModel"
         xmlns:system="clr-namespace:System;assembly=mscorlib"
-        
+        xmlns:view="clr-namespace:poligon_inter.View"
         d:DataContext="{d:DesignInstance vm:MainWindowViewModel}"
         mc:Ignorable="d"
-        Title="MainWindow" 
+        Title="Poligon" 
+        d:DesignWidth="600" d:DesignHeight="450"
         Height="{Binding Height, Mode=TwoWay}" Width="{Binding Width, Mode=TwoWay}"
         MinHeight="450" MinWidth="600"
         Top="{Binding Top, Mode=TwoWay}" Left="{Binding Left, Mode=TwoWay}"
         WindowState="{Binding CurMainWindowState, Mode=TwoWay}"
-        Style="{StaticResource MaterialDesignWindow }"
+        Style="{StaticResource MaterialDesignWindow }" WindowStyle="None"
         >
- 
-    
-        <md:DialogHost  IsOpen="{Binding IsDialogOpen}" 
-            DialogContentUniformCornerRadius="20"
-                      DialogTheme="Inherit" Identifier="RootDialog">
-        
-            <Grid Cursor="" >
-        
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="auto"/>
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-                 <ToolBar  DockPanel.Dock="Top" Grid.Row="0" >
-                    <Button  x:Name="NweDB" Command="{Binding CreateDBCommand}">
-                        <md:PackIcon Kind="DatabasePlus" />
+    <Window.Resources>
+        <ResourceDictionary>
+            <view:IsSelectedFolderTreeConverter x:Key="IsSelectedFolderTreeConverter"/>
+        </ResourceDictionary>
+    </Window.Resources>
+    <WindowChrome.WindowChrome>
+        <WindowChrome GlassFrameThickness="0" CornerRadius="0" CaptionHeight="0" />
+    </WindowChrome.WindowChrome>
+    <i:Interaction.Triggers>
+        <!-- zmieniłem podejście jest autozapis pozmianie, ale zostawiam na przyszłość-->
+        <!--i:EventTrigger EventName="Loaded">
+            <i:InvokeCommandAction Command="{Binding onLoadedCommand}" />
+        </i:EventTrigger>
+        <i:EventTrigger EventName="Closed">
+            <i:InvokeCommandAction Command="{Binding onClosedCommand}" />
+        </i:EventTrigger-->
+        <i:EventTrigger EventName="MouseLeftButtonDown">
+            <i:CallMethodAction MethodName="DragMove"
+                           TargetObject="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+    <Border CornerRadius="5" BorderBrush="Gray" BorderThickness="2" Padding="6" Background="Transparent">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto" MaxHeight="40"/> <!-- pasek tytułowy -->                
+                <RowDefinition />                
+            </Grid.RowDefinitions>
+            <!--#region pasek Title Bar-->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"  Grid.Row="0">
+                <Viewbox Height="30">
+                <Button x:Name="btnMin" FontFamily="Marlett" FontSize="20" Content="0"
+                        Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
+                        BorderBrush="Transparent" Background="Transparent" Foreground="White" 
+                    Command="{Binding onCmdMinCommand, Mode=OneWay}"
+                    />
+                </Viewbox>
+                <!--Click="btnMin_Click"/-->
+                <Viewbox Height="30">
+                <Button x:Name="btnMax" FontFamily="Marlett" FontSize="20" Content="{Binding ContentMax, Mode=OneWay}" 
+                        Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
+                        BorderBrush="Transparent" Background="Transparent" Foreground="White" 
+                    Command="{Binding onCmdMaxCommand, Mode=OneWay}" />
+                </Viewbox>
+                <!--Click="btnMax_Click"/-->
+                <Viewbox Height="30">
+                    <Button x:Name="btnClouse" FontFamily="Marlett" FontSize="20" Content="r" 
+                            Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
+                            BorderBrush="Transparent" Background="Transparent" Foreground="White" >
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <i:CallMethodAction MethodName="Close"
+                               TargetObject="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
                     </Button>
-                    <Button x:Name="AddFolder">
-                        <md:PackIcon Kind="FolderPlusOutline" />
-                    </Button>
-                    <Button  x:Name="AddFile" >
-                        <md:PackIcon Kind="FilePlus" />
-                    </Button>            
-                 </ToolBar>
-           
+                </Viewbox>
 
-                <Grid Grid.Row=" 1">
-                    <Grid.ColumnDefinitions>            
-                        <ColumnDefinition Width="auto"/>
-                        <ColumnDefinition Width="5" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Expander Grid.Column="0" ExpandDirection="Left" x:Name="Expand"
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="left"  Grid.Row="0">
+                <!-- tu będzie ikona o ile ją dodam-->
+                <!--Image HorizontalAlignment="Left" Height="32"    Width="32"  Source="/resources/ico/Icon1.ico" /-->
+                <Label x:Name="WindowHeader" Content="Poligon Testowy"    />
+
+            </StackPanel>
+            <!--#endregion-->
+            <md:DialogHost Grid.Row=" 1" IsOpen="{Binding IsDialogOpen}" 
+                      DialogContentUniformCornerRadius="20"
+                      DialogTheme="Inherit" Identifier="RootDialog">
+
+                <Grid Cursor="" >
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <ToolBar  DockPanel.Dock="Top" Grid.Row="0" >
+                        <Button  x:Name="NweDB" Command="{Binding CreateDBCommand}">
+                            <md:PackIcon Kind="DatabasePlus" />
+                        </Button>
+                        <Button x:Name="AddFolder" Command="{Binding AddFolderCommand}"
+                                >
+                            <md:PackIcon Kind="FolderPlusOutline" />
+                            <!-- styl powoduje że przyciski są niebieskie ??-->
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
+                                    <Setter Property="IsEnabled" 
+                                Value="{Binding LActiveTreeModelItem, Converter={StaticResource IsSelectedFolderTreeConverter}}"/>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        <Button x:Name="AddFolder2" Click="AddFolder_Click">
+                            <md:PackIcon Kind="FolderPlusOutline" />
+                        </Button>
+                        <Button  x:Name="AddFile" Command="{Binding AddFileCommand}">
+                            <md:PackIcon Kind="FilePlus" />
+                        </Button>
+
+                    </ToolBar>
+
+
+                    <Grid Grid.Row=" 1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="auto"/>
+                            <!--ColumnDefinition Width="5" />-->
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Expander Grid.Column="0" ExpandDirection="Left" x:Name="Expand"
                               IsExpanded="{Binding ExtenderIsExpanded}" >
-                         <Expander.Header>
+                            <!--Expander.Header>
                             <TextBlock RenderTransformOrigin=".5,.5" Text="Bazy danych">
                                 <TextBlock.LayoutTransform>
                                     <RotateTransform Angle="90" />
                                 </TextBlock.LayoutTransform>
                             </TextBlock>
-                         </Expander.Header>
+                         </Expander.Header-->
 
-                        <TreeView  x:Name="Tree"   ItemsSource="{Binding Tree}">
-                            <TreeView.ItemTemplate>                        
-                                <HierarchicalDataTemplate DataType="{x:Type vm:TreeModel}" ItemsSource="{Binding Children}" >
-                                    <StackPanel>
-                                        <TextBlock Text="{Binding Name}" Foreground="White"/>
-                                        <i:Interaction.Triggers>
-                                            <i:EventTrigger EventName="PreviewMouseRightButtonDown" >
-                                                <!--i:CallMethodAction TargetObject="{Binding}" MethodName="KlikRightCommand"/-->
-                                            <i:InvokeCommandAction Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, Path=DataContext.TreeModelRBMClickCommand}" 
+                            <TreeView  x:Name="Tree"   ItemsSource="{Binding Tree}">
+                                <TreeView.ItemTemplate>
+                                    <HierarchicalDataTemplate DataType="{x:Type vm:TreeModel}" ItemsSource="{Binding Children}" >
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Name}" Foreground="White"/>
+                                            <i:Interaction.Triggers>
+                                                <i:EventTrigger EventName="PreviewMouseRightButtonDown" >
+                                                    <!--i:CallMethodAction TargetObject="{Binding}" MethodName="KlikRightCommand"/-->
+                                                    <i:InvokeCommandAction Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, Path=DataContext.TreeModelRBMClickCommand}" 
                                                     CommandParameter="{Binding}"  />
-                                                <!--i:ChangePropertyAction PropertyName="{Binding IsRightSelected}" Value="true" /-->
-                                            </i:EventTrigger>
-                                        </i:Interaction.Triggers>
-                                    </StackPanel>
-                                </HierarchicalDataTemplate>                        
-                            </TreeView.ItemTemplate>
-                            <TreeView.ItemContainerStyle >
-                                <Style TargetType="TreeViewItem">
-                                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
-                                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
-                                    <Setter Property="FontWeight" Value="Normal" />
-                                    <Style.Triggers>
-                                        <Trigger Property="IsSelected" Value="True">
-                                            <Setter Property="FontWeight" Value="Bold" />
-                                        </Trigger>
-                                    </Style.Triggers>
-                            </Style>
-                            </TreeView.ItemContainerStyle>
-                            <TreeView.ContextMenu>
-                                <ContextMenu >
-                                    <MenuItem Header="Dodaj"  Command="{Binding AddFolderCommand}">                                
-                                        <MenuItem.Icon>
-                                            <md:PackIcon Kind="PlusThick" />
-                                        </MenuItem.Icon>
-                                    </MenuItem>
-                                    <MenuItem Header="Usuń" >
-                                        <MenuItem.Icon>
-                                            <md:PackIcon Kind="Close" />
-                                        </MenuItem.Icon>
-                                    </MenuItem>
-                                    <MenuItem Header="Zmień nazwę" >
-                                        <MenuItem.Icon>
-                                            <md:PackIcon Kind="Rename" />
-                                        </MenuItem.Icon>
-                                    </MenuItem>
-                                </ContextMenu>
-                                <!--ContextMenu   ItemsSource="{Binding TVCommandList , Mode=OneTime}"-->
-                                <!--ContextMenu x:Name="CMTree"  ItemsSource="{Binding TVCommandList}" DisplayMemberPath="Displayname">
+                                                    <!--i:ChangePropertyAction PropertyName="{Binding IsRightSelected}" Value="true" /-->
+                                                </i:EventTrigger>
+                                                <i:EventTrigger EventName="MouseLeftButtonDown" >
+                                                    <!-- dodać previewM ...  -->
+                                                    <i:InvokeCommandAction Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, Path=DataContext.TreeModelLBMClickCommand}" 
+                                                        CommandParameter="{Binding}"  />
+                                                </i:EventTrigger>
+                                            </i:Interaction.Triggers>
+                                        </StackPanel>
+                                    </HierarchicalDataTemplate>
+                                </TreeView.ItemTemplate>
+                                <TreeView.ItemContainerStyle >
+                                    <Style TargetType="TreeViewItem">
+                                        <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                                        <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                                        <Setter Property="FontWeight" Value="Normal" />
+                                        <Style.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter Property="FontWeight" Value="Bold" />
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TreeView.ItemContainerStyle>
+                                <TreeView.ContextMenu>
+                                    <ContextMenu >
+                                        <!-- z dodawanie i usuwanie kategorii głównych powinno być zabezpieczone-->
+                                        <!-- może później zrobiedynamiczne menu  to jakoś to ogarnę-->
+                                        <MenuItem Header="Dodaj"  Command="{Binding AddFolderCommand}">
+                                            <MenuItem.Icon>
+                                                <md:PackIcon Kind="PlusThick" />
+                                            </MenuItem.Icon>
+                                        </MenuItem>
+                                        <MenuItem Header="Usuń" Command="{Binding RemoveFolderCommand}">
+                                            <MenuItem.Icon>
+                                                <md:PackIcon Kind="Close" />
+                                            </MenuItem.Icon>
+                                        </MenuItem>
+                                        <MenuItem Header="Zmień nazwę" >
+                                            <MenuItem.Icon>
+                                                <md:PackIcon Kind="Rename" />
+                                            </MenuItem.Icon>
+                                        </MenuItem>
+                                    </ContextMenu>
+                                    <!--ContextMenu   ItemsSource="{Binding TVCommandList , Mode=OneTime}"-->
+                                    <!--ContextMenu x:Name="CMTree"  ItemsSource="{Binding TVCommandList}" DisplayMemberPath="Displayname">
                                     <ContextMenu.Resources>
                                         <Style TargetType="{x:Type MenuItem}">
                                             <Setter Property="Command" Value="{Binding MyContextMenuCommand}" />
                                         </Style>
                                     </ContextMenu.Resources>
-                                </ContextMenu>-->                    
-                            </TreeView.ContextMenu>
-                        </TreeView>                
-                    </Expander>
-                    <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Cursor="SizeWE"  />
-                 <!--#region  tabcontrol -->
-            <!--TabControl TabStripPlacement="Left">
+                                </ContextMenu>-->
+                                </TreeView.ContextMenu>
+                            </TreeView>
+                        </Expander>
+                        <!-- GridSpliter w tym miejscu powoduje problemy-->
+                        <!--GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Cursor="SizeWE"  /-->
+                        <!--#region  tabcontrol -->
+                        <!--TabControl TabStripPlacement="Left">
 
                 <TabControl.Template>
                     <ControlTemplate TargetType="TabControl">
@@ -166,7 +250,7 @@
                             <ToggleButton IsChecked="True"
                             Style="{StaticResource MaterialDesignSwitchSecondaryToggleButton}"
                             ToolTip="MaterialDesignSwitchSecondaryToggleButton" 
-                                  Click="ToggleButton_Click"  
+                                   
                                   x:Name="DarkModeToggleButton"
                                           />
                         </Viewbox>
@@ -176,45 +260,45 @@
                             <ToggleButton x:Name = "tb" Margin = "6"
                               Style="{StaticResource MaterialDesignSwitchToggleButton}"
                             HorizontalAlignment = "left" >
-                                <materialDesign:PackIcon Kind="Pin" Width = "21" Height="21"
+                                <md:PackIcon Kind="Pin" Width = "21" Height="21"
                                    RenderTransformOrigin=".5,.5" >
-                                    <materialDesign:PackIcon.RenderTransform>
+                                    <md:PackIcon.RenderTransform>
                                         <RotateTransform Angle="45"  />
-                                    </materialDesign:PackIcon.RenderTransform>
-                                </materialDesign:PackIcon>
-                                <materialDesign:ToggleButtonAssist.OnContent>
-                                    <materialDesign:PackIcon Kind="Pin" />
-                                </materialDesign:ToggleButtonAssist.OnContent>
+                                    </md:PackIcon.RenderTransform>
+                                </md:PackIcon>
+                                <md:ToggleButtonAssist.OnContent>
+                                    <md:PackIcon Kind="Pin" />
+                                </md:ToggleButtonAssist.OnContent>
                             </ToggleButton>
                         </Viewbox>
                         <Viewbox Height="20" Cursor="">
                             <ToggleButton  Margin = "6"
                               Style="{StaticResource MaterialDesignSwitchToggleButton}"
                             HorizontalAlignment = "left" >
-                                <materialDesign:PackIcon Kind="Pin" Width = "21" Height="21"
+                                <md:PackIcon Kind="Pin" Width = "21" Height="21"
                                    RenderTransformOrigin=".5,.5" >
-                                    <materialDesign:PackIcon.RenderTransform>
+                                    <md:PackIcon.RenderTransform>
                                         <RotateTransform Angle="45"  />
-                                    </materialDesign:PackIcon.RenderTransform>
-                                </materialDesign:PackIcon>
-                                <materialDesign:ToggleButtonAssist.OnContent>
-                                    <materialDesign:PackIcon Kind="Pin" />
-                                </materialDesign:ToggleButtonAssist.OnContent>
+                                    </md:PackIcon.RenderTransform>
+                                </md:PackIcon>
+                                <md:ToggleButtonAssist.OnContent>
+                                    <md:PackIcon Kind="Pin" />
+                                </md:ToggleButtonAssist.OnContent>
                             </ToggleButton>
                         </Viewbox>
                         <Viewbox Height="25" Cursor="">
                             <ToggleButton  Margin = "6"
                               Style="{StaticResource MaterialDesignSwitchToggleButton}"
                             HorizontalAlignment = "left" >
-                                <materialDesign:PackIcon Kind="Pin" Width = "21" Height="21"
+                                <md:PackIcon Kind="Pin" Width = "21" Height="21"
                                    RenderTransformOrigin=".5,.5" >
-                                    <materialDesign:PackIcon.RenderTransform>
+                                    <md:PackIcon.RenderTransform>
                                         <RotateTransform Angle="45"  />
-                                    </materialDesign:PackIcon.RenderTransform>
-                                </materialDesign:PackIcon>
-                                <materialDesign:ToggleButtonAssist.OnContent>
-                                    <materialDesign:PackIcon Kind="Pin" />
-                                </materialDesign:ToggleButtonAssist.OnContent>
+                                    </md:PackIcon.RenderTransform>
+                                </md:PackIcon>
+                                <md:ToggleButtonAssist.OnContent>
+                                    <md:PackIcon Kind="Pin" />
+                                </md:ToggleButtonAssist.OnContent>
                             </ToggleButton>
                         </Viewbox>
                         <ToggleButton
@@ -227,141 +311,141 @@
                               IsChecked="True"
                               Style="{StaticResource MaterialDesignActionSecondaryToggleButton}"
                         ToolTip="MaterialDesignActionSecondaryToggleButton" />
-                        <ToggleButton Content="{materialDesign:PackIcon Kind=Heart, Size=21}"
+                        <ToggleButton Content="{md:PackIcon Kind=Heart, Size=21}"
                             IsChecked="True"
                             Style="{StaticResource MaterialDesignFlatPrimaryToggleButton}"
                             ToolTip="MaterialDesignFlatPrimaryToggleButton" />
                         <ToggleButton Width="60"
                         Style="{StaticResource MaterialDesignSwitchToggleButton}"
                         ToolTip="MaterialDesignSwitchToggleButton with Custom Track Background">
-                            <materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                            <md:ToggleButtonAssist.SwitchTrackOnBackground>
                                 <SolidColorBrush Color="Green" />
-                            </materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                            </md:ToggleButtonAssist.SwitchTrackOnBackground>
 
-                            <materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                            <md:ToggleButtonAssist.SwitchTrackOffBackground>
                                 <SolidColorBrush Color="Red" />
-                            </materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                            </md:ToggleButtonAssist.SwitchTrackOffBackground>
                         </ToggleButton>
                     <ToggleButton Width="60"
 Style="{StaticResource MaterialDesignSwitchToggleButton}"
 ToolTip="MaterialDesignSwitchToggleButton with Custom Track Background">
-                        <materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                        <md:ToggleButtonAssist.SwitchTrackOnBackground>
                             <SolidColorBrush Color="Green" />
-                        </materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                        </md:ToggleButtonAssist.SwitchTrackOnBackground>
 
-                        <materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                        <md:ToggleButtonAssist.SwitchTrackOffBackground>
                             <SolidColorBrush Color="Red" />
-                        </materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                        </md:ToggleButtonAssist.SwitchTrackOffBackground>
                     </ToggleButton>
                     <ToggleButton Width="60"
 Style="{StaticResource MaterialDesignSwitchToggleButton}"
 ToolTip="MaterialDesignSwitchToggleButton with Custom Track Background">
-                        <materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                        <md:ToggleButtonAssist.SwitchTrackOnBackground>
                             <SolidColorBrush Color="Green" />
-                        </materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                        </md:ToggleButtonAssist.SwitchTrackOnBackground>
 
-                        <materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                        <md:ToggleButtonAssist.SwitchTrackOffBackground>
                             <SolidColorBrush Color="Red" />
-                        </materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                        </md:ToggleButtonAssist.SwitchTrackOffBackground>
                     </ToggleButton>
                     <ToggleButton Width="60"
 Style="{StaticResource MaterialDesignSwitchToggleButton}"
 ToolTip="MaterialDesignSwitchToggleButton with Custom Track Background">
-                        <materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                        <md:ToggleButtonAssist.SwitchTrackOnBackground>
                             <SolidColorBrush Color="Green" />
-                        </materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                        </md:ToggleButtonAssist.SwitchTrackOnBackground>
 
-                        <materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                        <md:ToggleButtonAssist.SwitchTrackOffBackground>
                             <SolidColorBrush Color="Red" />
-                        </materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                        </md:ToggleButtonAssist.SwitchTrackOffBackground>
                     </ToggleButton>
                     <ToggleButton Width="60"
 Style="{StaticResource MaterialDesignSwitchToggleButton}"
 ToolTip="MaterialDesignSwitchToggleButton with Custom Track Background">
-                        <materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                        <md:ToggleButtonAssist.SwitchTrackOnBackground>
                             <SolidColorBrush Color="Green" />
-                        </materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                        </md:ToggleButtonAssist.SwitchTrackOnBackground>
 
-                        <materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                        <md:ToggleButtonAssist.SwitchTrackOffBackground>
                             <SolidColorBrush Color="Red" />
-                        </materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                        </md:ToggleButtonAssist.SwitchTrackOffBackground>
                     </ToggleButton>
                     <ToggleButton Width="60"
 Style="{StaticResource MaterialDesignSwitchToggleButton}"
 ToolTip="MaterialDesignSwitchToggleButton with Custom Track Background">
-                        <materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                        <md:ToggleButtonAssist.SwitchTrackOnBackground>
                             <SolidColorBrush Color="Green" />
-                        </materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                        </md:ToggleButtonAssist.SwitchTrackOnBackground>
 
-                        <materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                        <md:ToggleButtonAssist.SwitchTrackOffBackground>
                             <SolidColorBrush Color="Red" />
-                        </materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                        </md:ToggleButtonAssist.SwitchTrackOffBackground>
                     </ToggleButton>
                     <ToggleButton Width="60"
 Style="{StaticResource MaterialDesignSwitchToggleButton}"
 ToolTip="MaterialDesignSwitchToggleButton with Custom Track Background">
-                        <materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                        <md:ToggleButtonAssist.SwitchTrackOnBackground>
                             <SolidColorBrush Color="Green" />
-                        </materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                        </md:ToggleButtonAssist.SwitchTrackOnBackground>
 
-                        <materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                        <md:ToggleButtonAssist.SwitchTrackOffBackground>
                             <SolidColorBrush Color="Red" />
-                        </materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                        </md:ToggleButtonAssist.SwitchTrackOffBackground>
                     </ToggleButton>
                     <ToggleButton Width="60"
 Style="{StaticResource MaterialDesignSwitchToggleButton}"
 ToolTip="MaterialDesignSwitchToggleButton with Custom Track Background">
-                        <materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                        <md:ToggleButtonAssist.SwitchTrackOnBackground>
                             <SolidColorBrush Color="Green" />
-                        </materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                        </md:ToggleButtonAssist.SwitchTrackOnBackground>
 
-                        <materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                        <md:ToggleButtonAssist.SwitchTrackOffBackground>
                             <SolidColorBrush Color="Red" />
-                        </materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                        </md:ToggleButtonAssist.SwitchTrackOffBackground>
                     </ToggleButton>
                     <ToggleButton Width="60"
 Style="{StaticResource MaterialDesignSwitchToggleButton}"
 ToolTip="MaterialDesignSwitchToggleButton with Custom Track Background">
-                        <materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                        <md:ToggleButtonAssist.SwitchTrackOnBackground>
                             <SolidColorBrush Color="Green" />
-                        </materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                        </md:ToggleButtonAssist.SwitchTrackOnBackground>
 
-                        <materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                        <md:ToggleButtonAssist.SwitchTrackOffBackground>
                             <SolidColorBrush Color="Red" />
-                        </materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                        </md:ToggleButtonAssist.SwitchTrackOffBackground>
                     </ToggleButton>
                     <ToggleButton Width="60"
 Style="{StaticResource MaterialDesignSwitchToggleButton}"
 ToolTip="MaterialDesignSwitchToggleButton with Custom Track Background">
-                        <materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                        <md:ToggleButtonAssist.SwitchTrackOnBackground>
                             <SolidColorBrush Color="Green" />
-                        </materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                        </md:ToggleButtonAssist.SwitchTrackOnBackground>
 
-                        <materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                        <md:ToggleButtonAssist.SwitchTrackOffBackground>
                             <SolidColorBrush Color="Red" />
-                        </materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                        </md:ToggleButtonAssist.SwitchTrackOffBackground>
                     </ToggleButton>
                     <ToggleButton Width="60"
 Style="{StaticResource MaterialDesignSwitchToggleButton}"
 ToolTip="MaterialDesignSwitchToggleButton with Custom Track Background">
-                        <materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                        <md:ToggleButtonAssist.SwitchTrackOnBackground>
                             <SolidColorBrush Color="Green" />
-                        </materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                        </md:ToggleButtonAssist.SwitchTrackOnBackground>
 
-                        <materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                        <md:ToggleButtonAssist.SwitchTrackOffBackground>
                             <SolidColorBrush Color="Red" />
-                        </materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                        </md:ToggleButtonAssist.SwitchTrackOffBackground>
                     </ToggleButton>
                     <ToggleButton Width="60"
 Style="{StaticResource MaterialDesignSwitchToggleButton}"
 ToolTip="MaterialDesignSwitchToggleButton with Custom Track Background">
-                        <materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                        <md:ToggleButtonAssist.SwitchTrackOnBackground>
                             <SolidColorBrush Color="Green" />
-                        </materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                        </md:ToggleButtonAssist.SwitchTrackOnBackground>
 
-                        <materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                        <md:ToggleButtonAssist.SwitchTrackOffBackground>
                             <SolidColorBrush Color="Red" />
-                        </materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                        </md:ToggleButtonAssist.SwitchTrackOffBackground>
                     </ToggleButton>
                 </StackPanel>
                 </TabItem>
@@ -376,11 +460,13 @@ ToolTip="MaterialDesignSwitchToggleButton with Custom Track Background">
                 </TabItem>
 
             </TabControl>-->
-        <!--#endregion-->
-        
+                        <!--#endregion-->
+                        <ContentControl Grid.Column="1" x:Name="Pages"  Content="{Binding SelectedViewModel}"/>
 
-                </Grid>   
-            </Grid>
-        </md:DialogHost>
-    
+                    </Grid>
+                </Grid>
+            </md:DialogHost>
+
+        </Grid>
+    </Border>
 </Window>

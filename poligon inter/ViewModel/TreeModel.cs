@@ -1,8 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
-using CommunityToolkit.Mvvm.Input;
+
 
 
 namespace poligon_inter.ViewModel;
@@ -18,6 +17,7 @@ public partial class TreeModel<T1> :ObservableObject
     }
 
     #region fields
+    //dodać pole "ukryty" i zaimplementować w drzewie, dodać przycisk pokazyjący okno z ukrytymi i możliwością odkrycia
     [ObservableProperty]
     [Column("Id")]
     private int _Id;
@@ -27,7 +27,7 @@ public partial class TreeModel<T1> :ObservableObject
     [ObservableProperty]
     private TreeModel<T1> _Parent;
     [ObservableProperty]
-    protected ObservableCollection<TreeModel<T1>> _children;
+    private ObservableCollection<TreeModel<T1>> _children;
     [ObservableProperty]
     private T1 _selectedValue;
     [ObservableProperty]
@@ -76,6 +76,8 @@ public partial class TreeModel<T1> :ObservableObject
     #region static methods
     // metody statyczne można przenieść do innego obiektu, tu raczej nie mają sensu 
     // operują na nim ale się do niego nie odwołują
+    // część przestaje być urzeteczna z powodu wykozystania zachowań "behaviors" co jest bardziej praktyczne
+    // dodać odnajdywanie pierszego elementu- będzie on nazwą bazy w drzewie
     public static TreeModel<T1> GetNodeById(T1 id, IEnumerable<TreeModel<T1>> nodes)
     {
         foreach (var node in nodes)
@@ -130,25 +132,4 @@ public partial class TreeModel<T1> :ObservableObject
 public class TreeModel : TreeModel<Guid>
 {
 }
-/*
-public partial class Category : ObservableObject
-{
-    public Category()
-    {
-        SubCategories = new ObservableCollection<Category>();
-    }
 
-    [Column("Id")]
-    public int Id { get; set; }
-
-    [StringLength(100)]
-    public string Name { get; set; }
-
-    [Column("ParentID")]
-    public int? ParentID { get; set; }
-
-    [ObservableProperty]
-    [ForeignKey("ParentID")]
-    private ObservableCollection<Category> _SubCategories;// { get; set; }
-}
-*/

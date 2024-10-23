@@ -13,6 +13,33 @@ części wspólne wszystkiego:
 - image - okładki i zdjęcia aktorów - tu id i link statyczny do pliku, pliki będą w katalogu bazy ale nie wiem jak to rozwiązać do końca
 	i nie są pokazywane w bazie (?) ale jakoś trzeba do nich dotrzeć jak coś się stanie więc musi być na to jakiś sposób wymyślony
 
+
+Struktura bazy: wszystko to są tabele:
+- tab TreeStructure (Categories) - ma zawierać strukturę drewa, zapytania będą brane w zależności od wybranego kontekstu
+	- name to nazwa wyświetlana a Function to funkcją jaką pełni bez względu jaka będzie name
+- tab. pliki i do niej tab. Katalogi
+- tab. kategorie - ma zawierać kategorie wprowadzanych utwotów
+- tab. słowniki 
+- tab osoba
+	- tu możba zrobić podkategorę grupa ?
+- tab produkt
+- tab wydawca
+- tab seria - może być podkategorią do wydawcy(studio - film x), osoby(książka), filmu(serial) - to jest określone w słownikach
+- tab rok 
+- robić tabele słownikowe do łączenia poszczególnych tabel ?? czy łądować wszystko do słowników??
+	-	pierwszy jest łatwiejszy do debugowania i chyba do robienia samych zapytań
+- tab image - ma zawierać ścieszki do plików graficznych wykożystanych w bazie
+	- czy nie próbować przechowywać plików graficznych w bazie ??
+	- może spróbować zrobić wybór jak to ma wyglądać??
+
+- baza i wszystkie pliki powinny być spakowane w zip jako psełdo baza z przykładowym rozszeżeniem PB, PDB, PBY
+- w momencie otwarcia pseudobazy rozpakowujemy wszystko z tyldą z przodu na wzór worda itp
+	 a w momencie zamykania o ile były robione zmiany pakujemy ponownie.
+- tworzenie nowej bazy to tworzenie katalogu z tyldą na początku i w środku ma być baza
+	o ile trzeba to plik ini do niej i struktura katalogów
+- jeżeli nie zrobimy szyfrowanego zip to hasło lekkie możemy dać w pliku ini psełdobazy
+- jak zablokować psełdobazę przed ponownym dostępem jeżeli jest już otwarta ?
+
 są dwa rodzaje plików
 - pliki wpisane do bazy - tylko zawa i ścieszka
 - pliki wyszukane na dyskach, mogą być oznaczone żeby ich więcej nie pokazywać (?)- tu czy wyżej (?)

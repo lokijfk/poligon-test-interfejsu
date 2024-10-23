@@ -1,4 +1,5 @@
 ﻿using MaterialDesignThemes.Wpf;
+using Microsoft.Win32;
 using poligon_inter.ViewModel;
 using System.Text;
 using System.Windows;
@@ -24,27 +25,15 @@ public partial class MainWindow : Window
         InitializeComponent();
     }
 
-    private void ToggleButton_Checked(object sender, RoutedEventArgs e)
+
+
+    private void AddFolder_Click(object sender, RoutedEventArgs e)
     {
-
-    }
-
-    private void ToggleButton_Unchecked(object sender, RoutedEventArgs e)
-    {
-
-    }
-
-    /*
-    private void ToggleButton_Click(object sender, RoutedEventArgs e)
-    => ModifyTheme(DarkModeToggleButton.IsChecked == true);
-    */
-
-    private static void ModifyTheme(bool isDarkTheme)
-    {
-        var paletteHelper = new PaletteHelper();
-        var theme = paletteHelper.GetTheme();
-
-        theme.SetBaseTheme(isDarkTheme ? BaseTheme.Dark : BaseTheme.Light);
-        paletteHelper.SetTheme(theme);
+        var dialog = new OpenFileDialog();
+        if (dialog.ShowDialog() == true)
+        {
+            string destinationFilePath = dialog.FileName;
+            (this.DataContext as MainWindowViewModel)?.SaveAlbumName(destinationFilePath);
+        }
     }
 }

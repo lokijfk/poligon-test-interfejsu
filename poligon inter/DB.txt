@@ -3,20 +3,20 @@ CREATE TABLE "Categories" (
 	"Name"	TEXT NOT NULL,
 	"ParentID"	INTEGER NOT NULL,
 	"Id"	INTEGER NOT NULL UNIQUE,
-	"Alter"	TEXT,
+	"Function"	TEXT,
 	PRIMARY KEY("Id" AUTOINCREMENT)
 );
 
 CREATE TABLE "Gatunek" (
 	"Id"	INTEGER NOT NULL UNIQUE,
-	"Nazwa"	TEXT NOT NULL,
+	"Name"	TEXT NOT NULL,
 	"Alter"	INTEGER,
 	"Id_typu"	INTEGER NOT NULL,
 	PRIMARY KEY("Id" AUTOINCREMENT)
 );
 
 CREATE TABLE "Katalog" (
-	"path"	,
+	"Path"	,
 	"Id"	INTEGER NOT NULL UNIQUE,
 	PRIMARY KEY("Id" AUTOINCREMENT)
 );
@@ -26,11 +26,12 @@ CREATE TABLE "Osoba" (
 	"Imie"	TEXT,
 	"Nazwisko"	TEXT,
 	"Imie2"	TEXT,
-	"Psełdonim"	TEXT,
+	"Alterego"	TEXT, /* to psełdonim*/
 	"Opis"	TEXT,
 	PRIMARY KEY("Id" AUTOINCREMENT)
 );
 
+/* to chyba miały być słowniki do osoby i pola dodatkowe*/
 CREATE TABLE "Osoba_add" (
 	"Id_Osoba"	INTEGER NOT NULL,
 	"Nazwa"	TEXT NOT NULL,

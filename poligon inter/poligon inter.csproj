@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="View\CreateDbWindow.xaml.cs">
+    <Compile Update="tmp\CreateDbWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

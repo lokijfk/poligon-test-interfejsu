@@ -6,12 +6,9 @@ using poligon_inter.View;
 using System.Diagnostics;
 using poligon_inter.Model;
 using System.Windows;
-
-
-
+using Microsoft.Win32;
 
 namespace poligon_inter.ViewModel;
-
 
 public partial class MainWindowViewModel: ObservableObject
 {
@@ -22,12 +19,31 @@ public partial class MainWindowViewModel: ObservableObject
     public ObservableCollection<TreeModel>? Tree { get; set; }
     //public ObservableCollection<ContextMenuTreeView> TVCommandList { get; set; }
 
-    private readonly IniBroker? iniFile = null;
+    private readonly BrokerIni? iniFile = null;
     //public MainWindowViewModel(IniFile iniFile) => this.iniFile = iniFile;
 
     private TreeModel<Guid>? RActiveTreeModelItem = null;
-    #endregion pola
+    [ObservableProperty]
+    private TreeModel<Guid>? _lActiveTreeModelItem = null;
 
+    //private IFileDialogService _iFileDialog;
+    #endregion pola
+    #region ObservableProperty
+
+    [ObservableProperty]
+    private double _MaxHeight = SystemParameters.MaximizedPrimaryScreenHeight;
+
+    [ObservableProperty]
+    private bool _IsDialogOpen;
+
+    [ObservableProperty]
+    private object _selectedViewModel;
+
+
+    //[ObservableProperty]
+    //private bool _isExpand = false;// działa ale trzeba powiązać z ini
+
+    #endregion ObservableProperty
     public MainWindowViewModel()
     {
         
@@ -35,8 +51,10 @@ public partial class MainWindowViewModel: ObservableObject
         {
             Tree = edb.GetTree();
         }
-        iniFile = new IniBroker();
-        
+        iniFile = new BrokerIni();
+        SelectedViewModel = new Welcome();
+        ContentMax = CurMainWindowState == WindowState.Normal ? "1" : "2";
+
         //trzeba zbudować menu item zależne od tego co było kliknięte prawym przyciskiem
         //ale prawdopodobnie tree będzie jedynym elementem obsługiwanym przez to menu to nie wiem czy jest sens komplikowania tego
         /*
@@ -69,16 +87,105 @@ public partial class MainWindowViewModel: ObservableObject
             //wywołać okno do wpisania nazwy, ale czy to nie trzeba będzie zmienić metodę na async?
             RActiveTreeModelItem.AddChild(new TreeModel<Guid> { Name = "AAAXXd", IsExpanded = true, Parent = RActiveTreeModelItem });
             //dodać do bazy
+            AddCategory("AAAXXd", RActiveTreeModelItem.Id);
+            RActiveTreeModelItem = null;
+        }
+        else
+        {
+            //TreeModel<Guid>? SelectedItem = TreeModel.GetSelectedNode(Tree);
+            // to jakoś poprawić
+            //Debug.WriteLine("Znalazłem Element: ");
+            if ((t is TreeModel<Guid>) && (t != null))
+            {
+                TreeModel<Guid> SelectedItem = t as TreeModel<Guid>;
+                SelectedItem.AddChild(new TreeModel<Guid> { Name = "AAAXXd", IsExpanded = true, Parent = SelectedItem });
+                AddCategory("AAAXXd", SelectedItem.Id);
+            }
+            else if (LActiveTreeModelItem != null)
+            {
+                TreeModel<Guid>? SelectedItem = LActiveTreeModelItem as TreeModel<Guid>;
+                SelectedItem.AddChild(new TreeModel<Guid> { Name = "AAAXXd", IsExpanded = true, Parent = SelectedItem });
+                AddCategory("AAAXXd", SelectedItem.Id);
+            }        
+           
         }
     }
 
 
+    private void AddCategory(string name, int parent)
+    {
+        using (var db = new DBSQLite())
+        {
+            int id = db.AddCategory(name, parent);
+            
+        }
+    }
+
+    private void RemoveCategory(int id)
+    {
+        using (var db = new DBSQLite())
+        {
+           db.DeleteCategory(id);
+
+        }
+    }
 
     [RelayCommand]
     private void RemoveFolder(object t)
     {
-        // Value="{Binding Path=PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>
+
+        if (RActiveTreeModelItem != null)
+        {
+            TreeModel<Guid>? ParentItem = RActiveTreeModelItem.Parent;
+           
+            if ((ParentItem != null) &&(ParentItem.Children.Count > 0))
+            {
+                ParentItem.Children.Remove(RActiveTreeModelItem);
+                // dodać usuwanie elementu zbazy, ale co z zależnościami i kaskadowością?
+            }
+            else
+            {
+                //tu dodać okno z pytaniem czy na pewno bo to główna kategoria i można stracić dane
+                //jak będzie falxe w odpowiedzi to wtedy zrobić return z funkcji żeby nie wywalało z bazy
+                // i zmienić rodzaj metody na task
+                Tree.Remove(RActiveTreeModelItem as TreeModel);
+            }
+            RemoveCategory(RActiveTreeModelItem.Id);
+            
+            RActiveTreeModelItem = null;
+        }
+
     }
+
+    [RelayCommand]
+    private void TreeModelLBMClick(object parameter)
+    {
+        if ((parameter is TreeModel<Guid>) && (parameter != null))
+        {
+            //działa tu zrobić wybór widoku dla klikniętego elementu
+            //tu można dodać pole lokalne LActiveTreeModelItem
+            // _ = MessageBox.Show("kliknięto: " + (t as TreeModel<Guid>).Name);
+            TreeModel<Guid>? c = parameter as TreeModel<Guid>;
+            LActiveTreeModelItem = c;
+        }
+
+    }
+
+    [RelayCommand]
+    private void AddFile()
+    {
+        //tu niestetu należy zrobić włąsne okno bo kolory okna wbudowanego zależą  od systemu a nie od aplikacji
+        //ale na razieto zostawimy co najwyżej przerobimy to nausługę
+
+        //dodać brokera który będzie załatwiał takie rzeczy, czyli udostępniał metody openfile open dialog i inne okna
+        // zwracał ich uchwyt do kontekstu 
+
+        OpenFileDialog openFileDialog = new OpenFileDialog();
+        openFileDialog.ShowDialog();
+
+        // OpenFolderDialog openFoldrfDialog;
+    }
+ 
 
     [RelayCommand]
     private void TreeModelRBMClick(object parameter)
@@ -94,24 +201,82 @@ public partial class MainWindowViewModel: ObservableObject
             RActiveTreeModelItem = null;
         }
     }
-    private bool CanExecuteEx(object parameter)
-    {
-        return true;
-    }
+
+
 
     #endregion RelayCommand
 
 
-    #region ObservableProperty
 
-    [ObservableProperty]
-    private double _MaxHeight = SystemParameters.MaximizedPrimaryScreenHeight;
-
-    //[ObservableProperty]
-    //private bool _isExpand = false;// działa ale trzeba powiązać z ini
 
     #region WindowState
+
+    //private DataRepository DataRepository { get; }
+
+    //public MainViewModel() => this.DataRepository = new DataRepository();
+
+    public void SaveAlbumName(string destinationFilePath)
+    {
+        // tu zrobić dodanie folderu do drzewa pod plikami jako plików wyszukanych z podanej ścieszki
+        // i włączyć odpowiedni widok do operacji na plikach
+        //this.DataRepository.SaveData(this.AlbumName, destinationFilePath);
+    }
+
+    [RelayCommand]
+    private void onCmdMin()
+    {
+        CurMainWindowState = WindowState.Minimized;
+    }
+
+    [RelayCommand]
+    private void onCmdMax()
+    {   //tu można zostawić sam stan a wielkość i połozenie przeniesć do brokera
+        // tam zmienią przy zmianie stanu
+        if (CurMainWindowState == WindowState.Normal)
+        {
+            LastWidth = Width;
+            LastHeihgt = Height;
+            LastTop = Top;
+            LastLeft = Left;
+            CurMainWindowState = WindowState.Maximized;
+            ContentMax = "2";
+        }
+        else
+        {
+            CurMainWindowState = WindowState.Normal;
+            ContentMax = "1";
+            Width = LastWidth;
+            Height = LastHeihgt;
+            Top = LastTop;
+            Left = LastLeft;
+        }
+    }
+
     
+    [ObservableProperty]
+    private string _ContentMax;
+
+    private int LastWidth
+    {
+        get => iniFile.LastWidth;
+        set => SetProperty(iniFile.LastWidth, value, iniFile, (u, n) => u.LastWidth = n);
+    }
+    private int LastHeihgt
+    {
+        get => iniFile.LastHeihgt;
+        set => SetProperty(iniFile.LastHeihgt, value, iniFile, (u, n) => u.LastHeihgt = n);
+    }
+    private int LastTop
+    {
+        get => iniFile.LastTop;
+        set => SetProperty(iniFile.LastTop, value, iniFile, (u, n) => u.LastTop = n);
+    }
+    private int LastLeft
+    {
+        get => iniFile.LastLeft;
+        set => SetProperty(iniFile.LastLeft, value, iniFile, (u, n) => u.LastLeft = n);
+    }
+
     public bool ExtenderIsExpanded
     {
         get => iniFile.ExtenderIsExpanded;
@@ -127,13 +292,13 @@ public partial class MainWindowViewModel: ObservableObject
     public int Width
     {
         get => iniFile.WindowWidth;
-        set => SetProperty(iniFile.WindowWidth, value, iniFile, (u, n) => u.WindowWidth = n);
+        set => SetProperty(iniFile.WindowWidth, value, iniFile, (u, n) => u.WindowWidth = n);            
     }
 
     public int Height
     {
         get => iniFile.WindowHeight;
-        set => SetProperty(iniFile.WindowHeight, value, iniFile, (u, n) => u.WindowHeight = n);
+        set => SetProperty(iniFile.WindowHeight, value, iniFile, (u, n) => u.WindowHeight = n);       
     }
 
     public int Top
@@ -150,48 +315,77 @@ public partial class MainWindowViewModel: ObservableObject
 
     #endregion WindowState
 
-    [ObservableProperty]
-    private bool _IsDialogOpen;
-
-
-    #endregion ObservableProperty
-
+    
     #region RelayCommand Task
 
     [RelayCommand]
     private async Task CreateDB()
     {
-         
-        string x = await ShowDialog(new SimpledialogViewModel {
-            Name = string.Empty, WindowName = "Utwórz nową bazę danych", Hint = "Nazwa bazy" });
-        /*
-         * do przebudowania, wszystko ma być w jednym pliku a tzw. baza ma być jako sekcja główna
-         * reszta  to podsekcje
-         * 
-         * za jakiś czas jak to ogarnę to zrobię osobne bazy danych zarzane przez odpowiedni objekt
-         * na osobnych plikach
-         * 
-         * na razie zrobić odczytywanie drzewa z bazy i dodawanie sekcji do bazy i do drzewa
-         */
-        if (x != string.Empty)
+        WindowAddDBViewModel DC = new WindowAddDBViewModel
         {
-            Debug.WriteLine("nazwa jest : " +x);
-            //tu robimy bazę danych, sprawdzić wcześniej czy nie ma juz takiej
+            Name = string.Empty,
+            WindowName = "Utwórz nową bazę danych",
+            Hint = "Nazwa bazy"
+        };
+              
+        object? view = new WindowAddDB
+        {
+            DataContext = DC
+        };
 
-            using (var edb = new DBSQLite())
+        object? result = await DialogHost.Show(view, "RootDialog");
+
+        //Debug.WriteLine("Dialog was closed, the CommandParameter used to close it was: " + (result ?? "NULL")+" - " + DC.Name);
+        //to poniżej można przenieść do metody ClosedEventHandler
+        Debug.WriteLine("result : " + (bool)result);
+        if ((bool)result)
+        {
+            //return DC.Name;
+            if (DC.Name != string.Empty)
             {
-                int id = edb.AddCategory(x);
-                Tree.Add(new TreeModel { Id = id, Name = x });
-                //Tree = edb.GetTree();
-                
+                //Debug.WriteLine("nazwa jest : " + DC.Name);
+                //tu robimy bazę danych, sprawdzić wcześniej czy nie ma juz takiej
+
+                using (var db = new DBSQLite())
+                {
+                    int id = db.AddCategory(DC.Name);
+                    Tree.Add(new TreeModel { Id = id, Name = DC.Name });
+                }
             }
-
-        }
-        else await ShowMessage(new MessageBoxXViewModel { Message = "nie podałeś nazy, bazy nie utworzono" });
-
-        // Debug.WriteLine("Dialog was closed, the CommandParameter used to close it was: " + x);
+        }     
+        
     }
 
+    
+    private async Task OnShowCD()
+    {
+        var vm = new WindowAddDBViewModel
+        {
+            Name = string.Empty,
+            WindowName = "Utwórz nową bazę danych",
+            Hint = "Nazwa bazy"
+        };
+
+        object? view = new WindowAddDB
+        {
+            DataContext = vm
+        };
+
+        object? result = await DialogHost.Show(view, "RootDialog",(object sender, DialogOpenedEventArgs e) =>
+        {
+            void OnClose(object _, EventArgs args)
+            {
+                vm.Close -= OnClose;
+                e.Session.Close();
+            }
+            vm.Close += OnClose;
+        }, ClosingEventHandler, ClosedEventHandler);
+        Debug.WriteLine("result : " + (result ?? "NULL"));
+
+    }
+
+
+    #region okna testowe
     private async Task ShowMessage(MessageBoxXViewModel DC)
     {
         object? view = new MessageBoxX
@@ -222,6 +416,13 @@ public partial class MainWindowViewModel: ObservableObject
             return DC.Name;
         }
             return "";        
+    }
+    #endregion okna testowe
+
+    private void ClosingEventHandler(object sender, DialogClosingEventArgs eventArgs)
+    {
+        //to jest opcjonalne, na razie zostawiam może jeszcze wykozystam
+        Debug.WriteLine("You can intercept the closed event here (10)." + eventArgs.Parameter);
     }
     private void ClosedEventHandler(object sender, DialogClosedEventArgs eventArgs)
     {

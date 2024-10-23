@@ -16,13 +16,13 @@ namespace poligon_inter.Model;
 //może to przerobić na broker ??
 //obiekt bazy jest obiejtem z biblioteki a tu będą zbierane, reszta chyba jest
 // tylko obsługękatalogów wypchnąć na zewnątrz
-public class DBSQLite : IDisposable
+public class BrokerDB : IDisposable
 {
 
     private SqliteConnection s_conn;
 
     
-    #region BrokerSQL
+    #region BrokerDB
     // to pozostaje prywatne odwołąnie się do bazy danych powinno nastąpić poprzez
     // podanie elementu lub nazwy bazy danych a nie do elementu con
     // dostę do danych następuje poprzez podanie zaznaczonego elementu z którego jest wybierana baza
@@ -30,11 +30,13 @@ public class DBSQLite : IDisposable
     // Broker zawiera wszystkie niezbędne kody SQL, co umożliwia w razie potrzeby zmianę bazy
     private Dictionary<string, SqliteConnection>? DB;
 
-    public void _BrokerSQL()
+    public BrokerDB()
     {
         // to będzie konstruktor
         // ma przeszukać katalog z bazami i podłączyć bazy które tam znajdzie 
         // do słownika
+        string path = Tools.GetUserAppDataPath;
+
     }
 
 
@@ -48,7 +50,7 @@ public class DBSQLite : IDisposable
         set => s_conn.Query<string>(@"INSERT INTO slowniki (nazwa,wartosc) values ('DBname',@value)",new { value });
     }
 
-    //helper
+    //broker
     private void  CreateDirX(string patch)
     {
         string dir = patch.Substring(0, patch.LastIndexOf('\\'));
@@ -56,8 +58,8 @@ public class DBSQLite : IDisposable
         Directory.CreateDirectory(dir);
     }
 
-    #region konstruktory - przenieść funkcjonalność do konstruktora Brokera
-    public DBSQLite(string path, string dbase)
+    #region konstruktorySQL
+    public void DBSQLite(string path, string dbase)
     {
         //yyy robić pusty ??
         //bo jest potrzebny taki w którym wskazujemy bazę 
@@ -74,7 +76,7 @@ public class DBSQLite : IDisposable
 
     }
 
-    public DBSQLite( string dbase)
+    public void DBSQLite( string dbase)
     {
         //yyy robić pusty ??
         //bo jest potrzebny taki w którym wskazujemy bazę 
@@ -90,7 +92,7 @@ public class DBSQLite : IDisposable
         DbuildDb(dbase);
 
     }
-    public DBSQLite()
+    public void DBSQLite()
     {
         //yyy robić pusty ??
         //bo jest potrzebny taki w którym wskazujemy bazę 
