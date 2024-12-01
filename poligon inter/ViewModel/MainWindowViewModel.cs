@@ -54,7 +54,7 @@ public partial class MainWindowViewModel: ObservableObject
         iniFile = new BrokerIni();
         SelectedViewModel = new Welcome();
         ContentMax = CurMainWindowState == WindowState.Normal ? "1" : "2";
-
+        BrokerDB BrokDB = new();
         //trzeba zbudować menu item zależne od tego co było kliknięte prawym przyciskiem
         //ale prawdopodobnie tree będzie jedynym elementem obsługiwanym przez to menu to nie wiem czy jest sens komplikowania tego
         /*

@@ -3,6 +3,7 @@ using Microsoft.Data.Sqlite;
 using poligon_inter.ViewModel;
 using System.Collections.ObjectModel;
 using System.Data;
+using System.Diagnostics;
 using System.IO;
 using System.Windows;
 
@@ -36,7 +37,17 @@ public class BrokerDB : IDisposable
         // ma przeszukać katalog z bazami i podłączyć bazy które tam znajdzie 
         // do słownika
         string path = Tools.GetUserAppDataPath;
+        string[] files = Directory.GetFiles(path, "*.db");
+        SqliteConnection conn;
+        string dbName = string.Empty;
+        foreach (string file in files)
+        {
+            
+            conn = new SqliteConnection( "Data Source=" + file);
+            dbName = file.Substring(file.LastIndexOf("\\")+1,file.LastIndexOf("\."));
+            Debug.WriteLine("dbname: " +file+ " , "+dbName);
 
+        }
     }
 
 
