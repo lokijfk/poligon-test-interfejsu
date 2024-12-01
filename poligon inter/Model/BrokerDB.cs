@@ -49,6 +49,21 @@ public class BrokerDB : IDisposable
 
         }
     }
+        string[] files = Directory.GetFiles(path, "*.db");
+        //SqliteConnection conn;
+        string dbName = string.Empty;
+        DB = new();
+        foreach (string file in files)
+        {
+            
+            //conn = new SqliteConnection( "Data Source=" + file);
+            int start = file.LastIndexOf("\\") + 1;
+            int len = file.Length - start - 3;
+            dbName = file.Substring(start,len);
+            Debug.WriteLine("dbname: " +file+ " , "+dbName);
+            DB[dbName] = new SqliteConnection("Data Source=" + file);
+        }
+    }
 
 
 
