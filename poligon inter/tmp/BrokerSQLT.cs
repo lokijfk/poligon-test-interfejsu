@@ -2,17 +2,18 @@
 
 using Dapper;
 using Microsoft.Data.Sqlite;
+using poligon_inter.Model;
 using poligon_inter.ViewModel;
 using System.Collections.ObjectModel;
 using System.Data;
 using System.IO;
 
-namespace poligon_inter.Model;
+namespace poligon_inter.tmp;
 
 internal class BrokerSQLT
 {
 
-    private Dictionary<string,DBSQLite>? DB;
+    private Dictionary<string, DBSQLite>? DB;
 
     //powinien być statyczny i zwracać ścieszkę do katalogu progrmu w profilu usera
     // jak nie ma katalogu to powinien go tworzyć
