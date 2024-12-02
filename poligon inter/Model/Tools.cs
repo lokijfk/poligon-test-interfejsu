@@ -13,16 +13,10 @@ static internal class Tools
         get { 
         //string sProductName = Assembly.GetExecutingAssembly().GetName().Name.ToString();
         return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\" +
-            Assembly.GetExecutingAssembly().GetName().Name.ToString();
+            GetProjectName;
         //sProductName;
         //return string.Empty;
         }
-    }
-
-    //tu mi podaje jakiś błąd i tego nie rozumiem
-    public static string GetConnectinString()
-    {
-        return Tools.GetUserAppDataPath + "\\" + Tools.GetProjectName + ".db";
     }
 
     public static string GetProjectName
@@ -37,6 +31,7 @@ static internal class Tools
     }
 
     /// <summary>
+    /// do wywalenia - przenieść do BrokeraINI
     /// Zwraca plik imi o podanej nazwie umieszczony w {user}\AppData\Local\{AppName}
     /// jeżeli nie ma pliko to tworzynowy
     /// Może zwrócić plik znajdujący się w aktualnym katalogu aplikacji o ile wcześniej został tam utworzony
@@ -68,6 +63,8 @@ static internal class Tools
     {
         return Tools.LoadIniP(Tools.GetProjectName);
     }
+
+    //to będzie do wywalenia
     static public DBSQLite? GetDataBase(string inis = null)
     {
         //trzeba tworzyć katalog o ile go nie ma i nie ma potrzeby sprawdzania czy jest

@@ -17,10 +17,10 @@ namespace poligon_inter.Model;
 //może to przerobić na broker ??
 //obiekt bazy jest obiejtem z biblioteki a tu będą zbierane, reszta chyba jest
 // tylko obsługękatalogów wypchnąć na zewnątrz
-public class BrokerDB : IDisposable
+public class BrokerDB 
 {
 
-    private SqliteConnection s_conn;
+    //private SqliteConnection s_conn;
 
     
     #region BrokerDB
@@ -30,38 +30,35 @@ public class BrokerDB : IDisposable
     // w metodzie zwracającej określony zestaw danych
     // Broker zawiera wszystkie niezbędne kody SQL, co umożliwia w razie potrzeby zmianę bazy
     private Dictionary<string, SqliteConnection>? DB;
-
+    //to aktualnie wybrana baza danych, wymagane jest sprawdzanie czy nie jest null
+    private SqliteConnection? s_conn = null;
     public BrokerDB()
     {
         // to będzie konstruktor
         // ma przeszukać katalog z bazami i podłączyć bazy które tam znajdzie 
         // do słownika
         string path = Tools.GetUserAppDataPath;
-        string[] files = Directory.GetFiles(path, "*.db");
-        SqliteConnection conn;
-        string dbName = string.Empty;
-        foreach (string file in files)
-        {
-            
-            conn = new SqliteConnection( "Data Source=" + file);
-            dbName = file.Substring(file.LastIndexOf("\\")+1,file.LastIndexOf("\."));
-            Debug.WriteLine("dbname: " +file+ " , "+dbName);
-
-        }
-    }
-        string[] files = Directory.GetFiles(path, "*.db");
-        //SqliteConnection conn;
-        string dbName = string.Empty;
         DB = new();
-        foreach (string file in files)
-        {
+        if (Directory.Exists(path))
+        {       
+            string[] files = Directory.GetFiles(path, "*.db");
+            //SqliteConnection conn;
+            //string dbName = string.Empty;
             
-            //conn = new SqliteConnection( "Data Source=" + file);
-            int start = file.LastIndexOf("\\") + 1;
-            int len = file.Length - start - 3;
-            dbName = file.Substring(start,len);
-            Debug.WriteLine("dbname: " +file+ " , "+dbName);
-            DB[dbName] = new SqliteConnection("Data Source=" + file);
+            foreach (string file in files)
+            {            
+                //conn = new SqliteConnection( "Data Source=" + file);
+                //int start = file.LastIndexOf("\\") + 1;
+                //int len = file.Length - start - 3;
+                //dbName = file.Substring(start,len);
+                //tu powinno być sprawdzenie nazy bazy w bazie
+                //jak string.empty to dopiero kombinowanie z nazwy pliku
+                var dbName = file.Substring(file.LastIndexOf("\\") + 1,
+                    file.Length - file.LastIndexOf("\\") + 1 - 3);
+                //Debug.WriteLine("dbname: " +file+ " , "+dbName);
+                DB[dbName] = new SqliteConnection("Data Source=" + file);
+                //DB[dbName].Open();
+            }
         }
     }
 
@@ -69,71 +66,23 @@ public class BrokerDB : IDisposable
 
     #endregion
 
-
+    //dotyczy wybranej bazy dabch, zastanawiam sięjak to rozwiązać, może zrobić metody statyczne ??
+    //cholera wie
     private string DBName
     {
         get =>  s_conn.Query<string>(@"SELECT wartosc FROM slowniki Where nazwa = 'DBname'").FirstOrDefault();
         set => s_conn.Query<string>(@"INSERT INTO slowniki (nazwa,wartosc) values ('DBname',@value)",new { value });
     }
-
+    
     //broker
-    private void  CreateDirX(string patch)
+    private void  CreateDirX(string path)
     {
-        string dir = patch.Substring(0, patch.LastIndexOf('\\'));
+        //string dir = ;
         //MessageBox.Show(dir);
-        Directory.CreateDirectory(dir);
+        Directory.CreateDirectory(path.Substring(0, path.LastIndexOf('\\')));
     }
 
-    #region konstruktorySQL
-    public void DBSQLite(string path, string dbase)
-    {
-        //yyy robić pusty ??
-        //bo jest potrzebny taki w którym wskazujemy bazę 
-        // i by się przydała jakaś zmienna wskazująca  na katalog z danymi programu
-        //path powinno być podawane w brokerze chyba!!!
-        string CS;
-        path = path + "\\" + dbase + ".db";
-        CS = "Data Source=" + path ;
-        if (!File.Exists(path)) CreateDirX(path);
-        s_conn = new SqliteConnection(CS);
-        s_conn.Open();
-
-        DbuildDb(dbase);
-
-    }
-
-    public void DBSQLite( string dbase)
-    {
-        //yyy robić pusty ??
-        //bo jest potrzebny taki w którym wskazujemy bazę 
-        // i by się przydała jakaś zmienna wskazująca  na katalog z danymi programu
-        string CS;
-        //to powinno być z brokera a nie z tools, tools wywalamy jak się da
-        string path = Tools.GetUserAppDataPath + "\\" + dbase + ".db";
-        CS = "Data Source=" + path;
-        if (!File.Exists(path)) CreateDirX(path);
-        s_conn = new SqliteConnection(CS);
-        s_conn.Open();
-
-        DbuildDb(dbase);
-
-    }
-    public void DBSQLite()
-    {
-        //yyy robić pusty ??
-        //bo jest potrzebny taki w którym wskazujemy bazę 
-        // i by się przydała jakaś zmienna wskazująca  na katalog z danymi programu
-        string CS;
-        string path = Tools.GetUserAppDataPath + "\\" + Tools.GetProjectName + ".db";
-        CS = "Data Source=" + path;
-        if (!File.Exists(path)) CreateDirX(path);
-        s_conn = new SqliteConnection(CS);
-        s_conn.Open();
-
-        DbuildDb("Poligon 0.01");
-
-    }
-    #endregion konstruktory
+ 
 
     private void DbuildDb(string name = "")
     {
@@ -141,6 +90,7 @@ public class BrokerDB : IDisposable
         // na zasadzie create if not exist
         //s_conn.Open();
         //var param = "jakaś baza";
+        s_conn.Open();
         var command = s_conn.CreateCommand();
         command.CommandText = "CREATE TABLE IF NOT EXISTS katalogi (path , Id  INTEGER PRIMARY KEY)";
         command.ExecuteNonQuery();
@@ -161,76 +111,139 @@ public class BrokerDB : IDisposable
         command.ExecuteNonQuery();
         */
     }
-
-    public SqliteConnection GetDB { 
-        get  {
-            //do przerobienia
-            if (s_conn == null)
+    private string GetTreeDBName(TreeModel<Guid> SelectedItem)
+    {
+        if (SelectedItem != null)
+        {
+            if (SelectedItem.Parent != null)
             {
-                string CS = "Data Source=" + Tools.GetUserAppDataPath + "\\" + Tools.GetProjectName + ".db";
-                s_conn = new SqliteConnection(CS); 
-                s_conn.Open();
+                var s1 = SelectedItem.Parent;
+                while (s1.Parent != null)
+                {
+                    s1 = s1.Parent;
+                }
+                return s1.Name;
             }
-            return s_conn;
-        } 
+            else return SelectedItem.Name;
+        }
+        return string.Empty;
     }
-    public int AddCategory(string category, int parent=0)
+
+    public void AddDB(string name)
+    {
+        string path = Tools.GetUserAppDataPath;
+        if (DB == null) DB = new();
+        if(!Directory.Exists(path)) Directory.CreateDirectory(path);
+        DB[name] = new SqliteConnection("Data Source=" +path+"\\"+ name+".db");
+        s_conn = DB[name];
+        DbuildDb(name);
+    }
+    public int AddCategory(string category, TreeModel<Guid> SelectedItem)
     {   //brak sprawdzania czy w głównym katalogu nie ma już takiej samej bazy
+        
+            //throw new Exception("nie wybrano bazy");
+            s_conn = DB[GetTreeDBName(SelectedItem)];
+        
+        //przerobić zapytania na drapera
+        s_conn.Open();
         var command = s_conn.CreateCommand();
         command.CommandText = String.Format(@"insert into Categories (Name,ParentID) values ('{0}','{1}')",
-                            category,parent);
+                            category, SelectedItem.Id);
         command.ExecuteNonQuery();
         command.CommandText = "select last_insert_rowid()";
-        Int64 LastRowID64 = (Int64)command.ExecuteScalar();
+        //tu if sprawdzający czy nie ma wartości null
+        Int64 LastRowID64 = s_conn.QuerySingle<Int64>("select last_insert_rowid()");
+        //Int64 LastRowID64 = (Int64)command.ExecuteScalar();
+        s_conn = null;
         return (int)LastRowID64;
         //int LastRowID = (int)LastRowID64;
         //return LastRowID;
         //return 0;
+        
     }
 
-    public void DeleteCategory(int id)
+    public void DeleteCategory(TreeModel<Guid> SelectedItem)
     {
+
+           //throw new Exception("nie wybrano bazy");
+        s_conn = DB[GetTreeDBName(SelectedItem)];
+        s_conn.Open();
         var command = s_conn.CreateCommand();
         //DELETE FROM Customers WHERE CustomerName = 'Alfreds Futterkiste';
         command.CommandText = String.Format(@"Delete From Categories WHERE id ='{0}'",
-                            id);
+                            SelectedItem.Id);
         command.ExecuteNonQuery();
+        s_conn = null;
     }
 
     #region Tree
     public ObservableCollection<TreeModel>? GetTree()
     {
-
-        ObservableCollection<TreeModel> Tree = null;
-        //to i tak jest na początek później w planach jest zmiana tego na jakiś obiekt
-        //przechowujący kilka baz danych i do nich się odnoszącego
-        //ogólnie to trzeba to przenieść do obektu odpowiedzialnego za bazę danych
-        if (File.Exists(Tools.GetUserAppDataPath + "\\" + Tools.GetProjectName + ".db"))
-            using (IDbConnection con = new SqliteConnection("Data Source=" + Tools.GetUserAppDataPath + "\\" + Tools.GetProjectName + ".db"))
+        ObservableCollection<TreeModel> Tree = new();
+        TreeModel branch = null;
+        foreach (KeyValuePair<string, SqliteConnection> con in DB)
+        {
+            if(con.Value != null)
             {
-                Tree = new ObservableCollection<TreeModel>(
-                con.Query<TreeModel>("SELECT * FROM Categories WHERE ParentID == 0", new DynamicParameters()));
+                //con.Value.Open();
+                branch = new TreeModel { Name = con.Key, IsExpanded = true, Parent = null };
+                // zwraca tree a nie tree<Guid>, jakby się dało to przerobić  bo wkuża okropnie
+                s_conn  = con.Value;
+                branch.Children = GetTreBranch();
+                if((branch.Children != null)&&(branch.Children.Count >0))
+                    foreach(var child in branch.Children)
+                        child.Parent = branch;
+               Tree.Add(branch);
+                if(con.Value == null) Debug.WriteLine("GetTreBranch is null");
+            }
+        }
+        s_conn = null;
+        return Tree;
+    }
+
+    public ObservableCollection<TreeModel<Guid>>? GetTreBranch()
+    {
+        //_con można zrobić pole statyczne do którego będzie przypisana aktualnie wybrana baza
+        // unikamy w ten sposób przekazywania tej bazy między metodami
+        ObservableCollection<TreeModel<Guid>> Tree = null;
+        //to i tak jest na początek później w planach jest zmiana tego na jakiś obiekt
+        if (s_conn != null)
+                Tree = new ObservableCollection<TreeModel<Guid>>(
+                s_conn.Query<TreeModel<Guid>>("SELECT * FROM Categories WHERE ParentID == 0", new DynamicParameters()));
                 foreach (var item in Tree)
                 {
                     //item.IsExpanded = false;
                     item.IsExpanded = true;
                     item.IsSelected = false;
-                    LoadSubCategories(item); 
-                }
-            }
+                    LoadSubCategories(item);
+                }            
         return Tree;
     }
-
+    /*
+    public ObservableCollection<TreeModel>? GetTreBranch(IDbConnection _con)
+    {
+        ObservableCollection<TreeModel> Tree = null;
+        //to i tak jest na początek później w planach jest zmiana tego na jakiś obiekt
+        if (_con != null)
+                Tree = new ObservableCollection<TreeModel>(
+                _con.Query<TreeModel>("SELECT * FROM Categories WHERE ParentID == 0", new DynamicParameters()));
+                foreach (var item in Tree)
+                {
+                    //item.IsExpanded = false;
+                    item.IsExpanded = true;
+                    item.IsSelected = false;
+                    LoadSubCategories(_con,item); 
+                }            
+        return Tree;
+    }
+    */
     private void LoadSubCategories(TreeModel<Guid> item)
     {
         // to jest dzięki jakiemuś frameworkowi ale nie wiem jakiemu
         //item.SubCategories = new ObservableCollection<Category>(s_conn.Category.Where(x => x.ParentID == item.Id));
         //to zamienić na uruchomioną  bazę !!!
-        using (IDbConnection con = new SqliteConnection("Data Source=" + Tools.GetUserAppDataPath + "\\" + Tools.GetProjectName + ".db"))
-        {
-
             item.Children = new ObservableCollection<TreeModel<Guid>>(
-            con.Query<TreeModel<Guid>>("select * from Categories where ParentID == @Id", item));//!!!
+            s_conn.Query<TreeModel<Guid>>("select * from Categories where ParentID == @Id", item));//!!!
             //item.AddChild(sub);
             foreach (var subitem in item.Children)
             {
@@ -238,8 +251,7 @@ public class BrokerDB : IDisposable
                 subitem.IsExpanded = true;
                 subitem.IsSelected = false;
                 LoadSubCategories(subitem);
-            }
-        }
+            }        
     }
 
     #endregion Tree
@@ -254,11 +266,12 @@ public class BrokerDB : IDisposable
     #region Files
     public void addFile(string nazwa, string path, string MD5 = "")
     {
+        //metoda do przepisania na nowo
         string id = string.Empty;
         var command = s_conn.CreateCommand();
         command.CommandText = String.Format("SELECT id FROM katalogi WHERE path='{0}'", path);
         SqliteDataReader reader = command.ExecuteReader();
-        while (reader.Read())
+        while (reader.Read())// po co ta pętla ??
         {
             id = reader["id"].ToString();
             //MessageBox.Show("id: " + reader["id"]);
@@ -284,34 +297,9 @@ public class BrokerDB : IDisposable
         if (ile < 1) MessageBox.Show(" chyba coś poszło nie tak, ilość dodana: " + ile);
     }
 
-    public void addFile(string CombinePath)
-    {
-
-    }
-
-
-    public int FileExists(string nazwa)
-    {
-
-        return 0;
-    }
-
-    public bool CatalogExists(string path)
-    {
-        return false;
-    }
-
-    public bool MD5Exists(string MD5)
-    {
-        return false;
-    }
-
     #endregion Files
     
     
-    public void Dispose()
-    {
-        ((IDisposable)GetDB).Dispose();
-    }
+
 }
 

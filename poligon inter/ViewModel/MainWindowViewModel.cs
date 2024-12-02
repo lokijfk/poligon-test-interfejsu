@@ -15,7 +15,7 @@ public partial class MainWindowViewModel: ObservableObject
 
     #region pola
     private DBSQLite? DB = null; // mieić nazwę obiektu na SQLBroker będzie mniej myląda
-   
+    private BrokerDB? BrokerDB = null;
     public ObservableCollection<TreeModel>? Tree { get; set; }
     //public ObservableCollection<ContextMenuTreeView> TVCommandList { get; set; }
 
@@ -46,18 +46,18 @@ public partial class MainWindowViewModel: ObservableObject
     #endregion ObservableProperty
     public MainWindowViewModel()
     {
-        
+        /*
         using (var edb = new DBSQLite())
         {
             Tree = edb.GetTree();
-        }
+        }*/
+        BrokerDB = new();
+        Tree = BrokerDB.GetTree();
         iniFile = new BrokerIni();
         SelectedViewModel = new Welcome();
         ContentMax = CurMainWindowState == WindowState.Normal ? "1" : "2";
 
-        BrokerDB BrokDB = new();
-
-        //BrokerDB BrokDB = new();
+       //BrokerDB BrokDB = new();
 
         //trzeba zbudować menu item zależne od tego co było kliknięte prawym przyciskiem
         //ale prawdopodobnie tree będzie jedynym elementem obsługiwanym przez to menu to nie wiem czy jest sens komplikowania tego
@@ -75,23 +75,19 @@ public partial class MainWindowViewModel: ObservableObject
         */
     }
 
-    #region Private methods
-
-
-    #endregion Private methods
-
     #region RelayCommand
 
     [RelayCommand]
     private void AddFolder(object t)
     {
-
+        var name = "AAAXXd-new";
         if (RActiveTreeModelItem != null)
         {
             //wywołać okno do wpisania nazwy, ale czy to nie trzeba będzie zmienić metodę na async?
-            RActiveTreeModelItem.AddChild(new TreeModel<Guid> { Name = "AAAXXd", IsExpanded = true, Parent = RActiveTreeModelItem });
+            RActiveTreeModelItem.AddChild(new TreeModel<Guid> { Name = name, IsExpanded = true, Parent = RActiveTreeModelItem });
             //dodać do bazy
-            AddCategory("AAAXXd", RActiveTreeModelItem.Id);
+            //AddCategory("AAAXXd", RActiveTreeModelItem.Id);
+            AddCategory(name, RActiveTreeModelItem);
             RActiveTreeModelItem = null;
         }
         else
@@ -102,36 +98,43 @@ public partial class MainWindowViewModel: ObservableObject
             if ((t is TreeModel<Guid>) && (t != null))
             {
                 TreeModel<Guid> SelectedItem = t as TreeModel<Guid>;
-                SelectedItem.AddChild(new TreeModel<Guid> { Name = "AAAXXd", IsExpanded = true, Parent = SelectedItem });
-                AddCategory("AAAXXd", SelectedItem.Id);
+                SelectedItem.AddChild(new TreeModel<Guid> { Name = name, IsExpanded = true, Parent = SelectedItem });
+                //AddCategory("AAAXXd", SelectedItem.Id);
+                AddCategory(name, SelectedItem);
             }
             else if (LActiveTreeModelItem != null)
             {
                 TreeModel<Guid>? SelectedItem = LActiveTreeModelItem as TreeModel<Guid>;
-                SelectedItem.AddChild(new TreeModel<Guid> { Name = "AAAXXd", IsExpanded = true, Parent = SelectedItem });
-                AddCategory("AAAXXd", SelectedItem.Id);
+                SelectedItem.AddChild(new TreeModel<Guid> { Name = name, IsExpanded = true, Parent = SelectedItem });
+                //AddCategory("AAAXXd", SelectedItem.Id);
+                AddCategory(name, SelectedItem);
             }        
            
         }
     }
 
 
-    private void AddCategory(string name, int parent)
+    private void AddCategory(string name, TreeModel<Guid> parent)
     {
+        /*
         using (var db = new DBSQLite())
         {
             int id = db.AddCategory(name, parent);
             
         }
+        */
+        BrokerDB.AddCategory(name, parent);
     }
 
-    private void RemoveCategory(int id)
+    private void RemoveCategory(TreeModel<Guid> id)
     {
+        /*
         using (var db = new DBSQLite())
         {
            db.DeleteCategory(id);
 
-        }
+        }*/
+        BrokerDB.DeleteCategory(id);
     }
 
     [RelayCommand]
@@ -154,7 +157,7 @@ public partial class MainWindowViewModel: ObservableObject
                 // i zmienić rodzaj metody na task
                 Tree.Remove(RActiveTreeModelItem as TreeModel);
             }
-            RemoveCategory(RActiveTreeModelItem.Id);
+            RemoveCategory(RActiveTreeModelItem);
             
             RActiveTreeModelItem = null;
         }
@@ -349,12 +352,14 @@ public partial class MainWindowViewModel: ObservableObject
             {
                 //Debug.WriteLine("nazwa jest : " + DC.Name);
                 //tu robimy bazę danych, sprawdzić wcześniej czy nie ma juz takiej
-
+                /*
                 using (var db = new DBSQLite())
                 {
                     int id = db.AddCategory(DC.Name);
                     Tree.Add(new TreeModel { Id = id, Name = DC.Name });
-                }
+                }*/
+                BrokerDB.AddDB(DC.Name);
+                Tree.Add(new TreeModel { Id = 0, Name = DC.Name });
             }
         }     
         

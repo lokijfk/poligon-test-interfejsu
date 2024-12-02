@@ -22,26 +22,6 @@ public class DBSQLite : IDisposable
     private SqliteConnection s_conn;
 
     
-    #region BrokerSQL
-    // to pozostaje prywatne odwołąnie się do bazy danych powinno nastąpić poprzez
-    // podanie elementu lub nazwy bazy danych a nie do elementu con
-    // dostę do danych następuje poprzez podanie zaznaczonego elementu z którego jest wybierana baza
-    // w metodzie zwracającej określony zestaw danych
-    // Broker zawiera wszystkie niezbędne kody SQL, co umożliwia w razie potrzeby zmianę bazy
-    private Dictionary<string, SqliteConnection>? DB;
-
-    public void _BrokerSQL()
-    {
-        // to będzie konstruktor
-        // ma przeszukać katalog z bazami i podłączyć bazy które tam znajdzie 
-        // do słownika
-    }
-
-
-
-    #endregion
-
-
     private string DBName
     {
         get =>  s_conn.Query<string>(@"SELECT wartosc FROM slowniki Where nazwa = 'DBname'").FirstOrDefault();

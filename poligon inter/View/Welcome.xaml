@@ -10,7 +10,8 @@
         <Label HorizontalContentAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" >
             WELCOME
         </Label>
-        <Button FontFamily="Marlett" FontSize="20" Content="r" 
-                Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" />
+        <!--Button FontFamily="Marlett" FontSize="20" Content="r" 
+                Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" 
+                /-->
     </Grid>
 </UserControl>
