@@ -38,6 +38,8 @@ public partial class TreeModel<T1> :ObservableObject
     private bool _isExpanded;
     [ObservableProperty]
     private bool _isRightSelected;
+    [ObservableProperty]
+    private string _view
     #endregion fields
 
     #region properties

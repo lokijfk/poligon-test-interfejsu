@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using MaterialDesignThemes.Wpf;
 using Microsoft.Data.Sqlite;
 using poligon_inter.ViewModel;
 using System.Collections.ObjectModel;
@@ -17,12 +18,12 @@ namespace poligon_inter.Model;
 //może to przerobić na broker ??
 //obiekt bazy jest obiejtem z biblioteki a tu będą zbierane, reszta chyba jest
 // tylko obsługękatalogów wypchnąć na zewnątrz
-public class BrokerDB 
+public class BrokerDB
 {
 
     //private SqliteConnection s_conn;
 
-    
+
     #region BrokerDB
     // to pozostaje prywatne odwołąnie się do bazy danych powinno nastąpić poprzez
     // podanie elementu lub nazwy bazy danych a nie do elementu con
@@ -40,13 +41,13 @@ public class BrokerDB
         string path = Tools.GetUserAppDataPath;
         DB = new();
         if (Directory.Exists(path))
-        {       
+        {
             string[] files = Directory.GetFiles(path, "*.db");
             //SqliteConnection conn;
             //string dbName = string.Empty;
-            
+
             foreach (string file in files)
-            {            
+            {
                 //conn = new SqliteConnection( "Data Source=" + file);
                 //int start = file.LastIndexOf("\\") + 1;
                 //int len = file.Length - start - 3;
@@ -54,7 +55,7 @@ public class BrokerDB
                 //tu powinno być sprawdzenie nazy bazy w bazie
                 //jak string.empty to dopiero kombinowanie z nazwy pliku
                 var dbName = file.Substring(file.LastIndexOf("\\") + 1,
-                    file.Length - file.LastIndexOf("\\") + 1 - 3);
+                    (file.Length - (file.LastIndexOf("\\") + 1)) - 3);
                 //Debug.WriteLine("dbname: " +file+ " , "+dbName);
                 DB[dbName] = new SqliteConnection("Data Source=" + file);
                 //DB[dbName].Open();
@@ -70,47 +71,41 @@ public class BrokerDB
     //cholera wie
     private string DBName
     {
-        get =>  s_conn.Query<string>(@"SELECT wartosc FROM slowniki Where nazwa = 'DBname'").FirstOrDefault();
-        set => s_conn.Query<string>(@"INSERT INTO slowniki (nazwa,wartosc) values ('DBname',@value)",new { value });
+        get => s_conn != null ? s_conn.QuerySingle<string>(@"SELECT wartosc FROM slowniki Where nazwa = 'DBname'") : "";
+        set
+        {
+            if ((s_conn != null) && (value != null))
+                s_conn.Execute(@"INSERT INTO slowniki (nazwa,wartosc) values ('DBname',@value)", new { value });
+        }
     }
-    
+
     //broker
-    private void  CreateDirX(string path)
+    private void CreateDirX(string path)
     {
         //string dir = ;
         //MessageBox.Show(dir);
         Directory.CreateDirectory(path.Substring(0, path.LastIndexOf('\\')));
     }
 
- 
+
 
     private void DbuildDb(string name = "")
     {
-        // to ma tworzyć automatycznie tabele w nowej bazie lub dodawać nowe jak nie istnieją
-        // na zasadzie create if not exist
-        //s_conn.Open();
         //var param = "jakaś baza";
-        s_conn.Open();
-        var command = s_conn.CreateCommand();
-        command.CommandText = "CREATE TABLE IF NOT EXISTS katalogi (path , Id  INTEGER PRIMARY KEY)";
-        command.ExecuteNonQuery();
-        command.CommandText = "CREATE TABLE IF NOT EXISTS pliki (nazwa varchar(255),rozszezenie varchar(5), id_katalogu, usuniety bool, MD5 , Id  INTEGER PRIMARY KEY)";
-        command.ExecuteNonQuery();
-        command.CommandText = "CREATE TABLE IF NOT EXISTS slowniki (nazwa,wartosc , Id  INTEGER PRIMARY KEY)";
-        command.ExecuteNonQuery();
-        //Debug.WriteLine("dbname: " + DBName);
-        string dbn = DBName;
-        if ((dbn == String.Empty) || (dbn == null))DBName = name;
-
-        // dodać function- to ma być funkcja jaką pełni
-        command.CommandText = "CREATE TABLE IF NOT EXISTS Categories ( Name  , ParentID  INTEGER NOT NULL, Id    INTEGER NOT NULL UNIQUE, PRIMARY KEY(Id AUTOINCREMENT))";
-        //CREATE TABLE "Categories" ( "Name"  , "ParentID"  INTEGER NOT NULL, "Id"    INTEGER NOT NULL UNIQUE, PRIMARY KEY("Id" AUTOINCREMENT) );
-        command.ExecuteNonQuery();
-        /*
-        command.CommandText = String.Format(@"insert into kategorie (nazwa,id_rodzica,wartosc) values ('DBname','null','{0}')", name);
-        command.ExecuteNonQuery();
-        */
+        if (s_conn != null)
+        {
+            //to katalogi w których są pliki dodane do bazy
+            s_conn.Execute("CREATE TABLE IF NOT EXISTS katalogi (path , Id  INTEGER PRIMARY KEY)");
+            // pliki dodane do bazy
+            s_conn.Execute("CREATE TABLE IF NOT EXISTS pliki (nazwa varchar(255),rozszezenie varchar(5), id_katalogu, usuniety bool, MD5 , Id  INTEGER PRIMARY KEY)");
+            // słowniki to wartości różne przechowywane w jednej tabeli, ale nie jest ich aż tyle żeby tworzyć osobną tabele dla nich
+            s_conn.Execute("CREATE TABLE IF NOT EXISTS slowniki (nazwa,wartosc , Id  INTEGER PRIMARY KEY)");
+            //kategorie to foldery w drzewie, ple view odpowiada za widok jaki się wyświetli po kliknięciu LPM            
+            s_conn.Execute("CREATE TABLE IF NOT EXISTS Categories ( Name ,view , ParentID  INTEGER NOT NULL, Id    INTEGER NOT NULL UNIQUE, PRIMARY KEY(Id AUTOINCREMENT))");
+            s_conn.Execute("INSERT INTO slowniki (nazwa,wartosc) values ('DBname',@name)", new { name });
+        }
     }
+
     private string GetTreeDBName(TreeModel<Guid> SelectedItem)
     {
         if (SelectedItem != null)
@@ -133,46 +128,31 @@ public class BrokerDB
     {
         string path = Tools.GetUserAppDataPath;
         if (DB == null) DB = new();
-        if(!Directory.Exists(path)) Directory.CreateDirectory(path);
-        DB[name] = new SqliteConnection("Data Source=" +path+"\\"+ name+".db");
+        if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+        DB[name] = new SqliteConnection("Data Source=" + path + "\\" + name + ".db");
         s_conn = DB[name];
         DbuildDb(name);
     }
     public int AddCategory(string category, TreeModel<Guid> SelectedItem)
     {   //brak sprawdzania czy w głównym katalogu nie ma już takiej samej bazy
-        
-            //throw new Exception("nie wybrano bazy");
-            s_conn = DB[GetTreeDBName(SelectedItem)];
-        
-        //przerobić zapytania na drapera
-        s_conn.Open();
-        var command = s_conn.CreateCommand();
-        command.CommandText = String.Format(@"insert into Categories (Name,ParentID) values ('{0}','{1}')",
-                            category, SelectedItem.Id);
-        command.ExecuteNonQuery();
-        command.CommandText = "select last_insert_rowid()";
-        //tu if sprawdzający czy nie ma wartości null
+
+        //throw new Exception("nie wybrano bazy");
+        s_conn = DB[GetTreeDBName(SelectedItem)];
+
+        s_conn.Execute("insert into Categories (Name,ParentID) values (@category,@id)",
+                            new { category, id = SelectedItem.Id });
         Int64 LastRowID64 = s_conn.QuerySingle<Int64>("select last_insert_rowid()");
-        //Int64 LastRowID64 = (Int64)command.ExecuteScalar();
+
         s_conn = null;
         return (int)LastRowID64;
-        //int LastRowID = (int)LastRowID64;
-        //return LastRowID;
-        //return 0;
-        
     }
 
     public void DeleteCategory(TreeModel<Guid> SelectedItem)
     {
 
-           //throw new Exception("nie wybrano bazy");
+        //throw new Exception("nie wybrano bazy");
         s_conn = DB[GetTreeDBName(SelectedItem)];
-        s_conn.Open();
-        var command = s_conn.CreateCommand();
-        //DELETE FROM Customers WHERE CustomerName = 'Alfreds Futterkiste';
-        command.CommandText = String.Format(@"Delete From Categories WHERE id ='{0}'",
-                            SelectedItem.Id);
-        command.ExecuteNonQuery();
+        s_conn.Execute("Delete From Categories WHERE id = @id", new { id = SelectedItem.Id });
         s_conn = null;
     }
 
@@ -183,18 +163,18 @@ public class BrokerDB
         TreeModel branch = null;
         foreach (KeyValuePair<string, SqliteConnection> con in DB)
         {
-            if(con.Value != null)
+            if (con.Value != null)
             {
                 //con.Value.Open();
                 branch = new TreeModel { Name = con.Key, IsExpanded = true, Parent = null };
                 // zwraca tree a nie tree<Guid>, jakby się dało to przerobić  bo wkuża okropnie
-                s_conn  = con.Value;
+                s_conn = con.Value;
                 branch.Children = GetTreBranch();
-                if((branch.Children != null)&&(branch.Children.Count >0))
-                    foreach(var child in branch.Children)
+                if ((branch.Children != null) && (branch.Children.Count > 0))
+                    foreach (var child in branch.Children)
                         child.Parent = branch;
-               Tree.Add(branch);
-                if(con.Value == null) Debug.WriteLine("GetTreBranch is null");
+                Tree.Add(branch);
+                if (con.Value == null) Debug.WriteLine("GetTreBranch is null");
             }
         }
         s_conn = null;
@@ -208,15 +188,15 @@ public class BrokerDB
         ObservableCollection<TreeModel<Guid>> Tree = null;
         //to i tak jest na początek później w planach jest zmiana tego na jakiś obiekt
         if (s_conn != null)
-                Tree = new ObservableCollection<TreeModel<Guid>>(
-                s_conn.Query<TreeModel<Guid>>("SELECT * FROM Categories WHERE ParentID == 0", new DynamicParameters()));
-                foreach (var item in Tree)
-                {
-                    //item.IsExpanded = false;
-                    item.IsExpanded = true;
-                    item.IsSelected = false;
-                    LoadSubCategories(item);
-                }            
+            Tree = new ObservableCollection<TreeModel<Guid>>(
+            s_conn.Query<TreeModel<Guid>>("SELECT * FROM Categories WHERE ParentID == 0", new DynamicParameters()));
+        foreach (var item in Tree)
+        {
+            //item.IsExpanded = false;
+            item.IsExpanded = true;
+            item.IsSelected = false;
+            LoadSubCategories(item);
+        }
         return Tree;
     }
     /*
@@ -242,16 +222,16 @@ public class BrokerDB
         // to jest dzięki jakiemuś frameworkowi ale nie wiem jakiemu
         //item.SubCategories = new ObservableCollection<Category>(s_conn.Category.Where(x => x.ParentID == item.Id));
         //to zamienić na uruchomioną  bazę !!!
-            item.Children = new ObservableCollection<TreeModel<Guid>>(
-            s_conn.Query<TreeModel<Guid>>("select * from Categories where ParentID == @Id", item));//!!!
-            //item.AddChild(sub);
-            foreach (var subitem in item.Children)
-            {
-                subitem.Parent = item;
-                subitem.IsExpanded = true;
-                subitem.IsSelected = false;
-                LoadSubCategories(subitem);
-            }        
+        item.Children = new ObservableCollection<TreeModel<Guid>>(
+        s_conn.Query<TreeModel<Guid>>("select * from Categories where ParentID == @Id", item));//!!!
+                                                                                               //item.AddChild(sub);
+        foreach (var subitem in item.Children)
+        {
+            subitem.Parent = item;
+            subitem.IsExpanded = true;
+            subitem.IsSelected = false;
+            LoadSubCategories(subitem);
+        }
     }
 
     #endregion Tree
@@ -298,8 +278,8 @@ public class BrokerDB
     }
 
     #endregion Files
-    
-    
+
+
 
 }
 

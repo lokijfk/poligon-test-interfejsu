@@ -85,8 +85,6 @@ public partial class MainWindowViewModel: ObservableObject
         {
             //wywołać okno do wpisania nazwy, ale czy to nie trzeba będzie zmienić metodę na async?
             RActiveTreeModelItem.AddChild(new TreeModel<Guid> { Name = name, IsExpanded = true, Parent = RActiveTreeModelItem });
-            //dodać do bazy
-            //AddCategory("AAAXXd", RActiveTreeModelItem.Id);
             AddCategory(name, RActiveTreeModelItem);
             RActiveTreeModelItem = null;
         }
@@ -98,15 +96,13 @@ public partial class MainWindowViewModel: ObservableObject
             if ((t is TreeModel<Guid>) && (t != null))
             {
                 TreeModel<Guid> SelectedItem = t as TreeModel<Guid>;
-                SelectedItem.AddChild(new TreeModel<Guid> { Name = name, IsExpanded = true, Parent = SelectedItem });
-                //AddCategory("AAAXXd", SelectedItem.Id);
+                SelectedItem.AddChild(new TreeModel<Guid> { Name = name, IsExpanded = true, Parent = SelectedItem });                
                 AddCategory(name, SelectedItem);
             }
             else if (LActiveTreeModelItem != null)
             {
                 TreeModel<Guid>? SelectedItem = LActiveTreeModelItem as TreeModel<Guid>;
-                SelectedItem.AddChild(new TreeModel<Guid> { Name = name, IsExpanded = true, Parent = SelectedItem });
-                //AddCategory("AAAXXd", SelectedItem.Id);
+                SelectedItem.AddChild(new TreeModel<Guid> { Name = name, IsExpanded = true, Parent = SelectedItem });                
                 AddCategory(name, SelectedItem);
             }        
            
@@ -116,24 +112,11 @@ public partial class MainWindowViewModel: ObservableObject
 
     private void AddCategory(string name, TreeModel<Guid> parent)
     {
-        /*
-        using (var db = new DBSQLite())
-        {
-            int id = db.AddCategory(name, parent);
-            
-        }
-        */
         BrokerDB.AddCategory(name, parent);
     }
 
     private void RemoveCategory(TreeModel<Guid> id)
     {
-        /*
-        using (var db = new DBSQLite())
-        {
-           db.DeleteCategory(id);
-
-        }*/
         BrokerDB.DeleteCategory(id);
     }
 
