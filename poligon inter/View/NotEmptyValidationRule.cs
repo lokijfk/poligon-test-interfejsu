@@ -2,14 +2,15 @@
 
 using System.Windows.Controls;
 
-namespace poligon_inter.View;
-
-public class NotEmptyValidationRule : ValidationRule
+namespace poligon_inter.View
 {
-    public override ValidationResult Validate(object value, CultureInfo cultureInfo)
+    public class NotEmptyValidationRule : ValidationRule
     {
-        return string.IsNullOrWhiteSpace((value ?? "").ToString())
-            ? new ValidationResult(false, "Pole jest wymagane.")
-            : ValidationResult.ValidResult;
+        public override ValidationResult Validate(object value, CultureInfo cultureInfo)
+        {
+            return string.IsNullOrWhiteSpace((value ?? "").ToString())
+                ? new ValidationResult(false, "Pole jest wymagane.")
+                : ValidationResult.ValidResult;
+        }
     }
 }

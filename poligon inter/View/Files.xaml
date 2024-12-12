@@ -1,0 +1,92 @@
+﻿<UserControl x:Class="poligon_inter.View.Files"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:local="clr-namespace:poligon_inter.View"
+             xmlns:vm="clr-namespace:poligon_inter.ViewModel"
+             mc:Ignorable="d" 
+             d:DataContext="{d:DesignInstance vm:FilesViewModel}"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <ToolBar  Grid.Row="0">
+            <Button x:Name="FindFiles" ToolTip="wybierz katalog do skanowania" Click="FindFiles_Click">
+                <md:PackIcon Kind="FileFind" />
+                <!--Image Source="/resources/ico/FolderOpened.png" Width="16" Height="16"/-->
+            </Button>
+
+            <Button x:Name="openWindow" >
+                <md:PackIcon Kind="FileSearch" />
+                <!--Image Source="/resources/ico/FolderOpened.png" Width="16" Height="16"/-->
+            </Button>
+            <Button x:Name="openWindow2" >
+                <md:PackIcon Kind="FolderSearch" />
+                <!--Image Source="/resources/ico/FolderOpened.png" Width="16" Height="16"/-->
+            </Button>
+            <Button x:Name="openWindow3" >
+                <md:PackIcon Kind="FolderSearchOutline" />
+                <!--Image Source="/resources/ico/FolderOpened.png" Width="16" Height="16"/-->
+            </Button>
+        </ToolBar>
+
+        <ListView Margin="10" Grid.Row="1"  x:Name="Widok" 
+                  ItemsSource="{Binding Files}"
+                  
+                  ><!-- ale nie wiem jak wyświetlać warónkowo, czyli to co chcę żebyu było-->
+            <!--ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Nazwa" DisplayMemberBinding="{Binding Name}"/>
+                    <GridViewColumn Header="rozsz" DisplayMemberBinding="{Binding Extension}"/>
+                    <GridViewColumn Header="ścieżka" DisplayMemberBinding="{Binding Path}"/>
+                    <GridViewColumn Header="rozmiar" DisplayMemberBinding="{Binding size}"/>
+                </GridView>
+            </ListView.View-->
+            <ListView.View>
+                <GridView x:Name="listaX">
+                    <GridViewColumn x:Name="buttonsX" >
+                        <GridViewColumnHeader  Content="" />
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <TextBlock Text="{Binding id}"  Visibility="Hidden"/>
+                                    <Button BorderBrush="Transparent" Background="Transparent" >
+                                        <md:PackIcon Kind="Plus" Foreground="Green"/>
+                                    </Button>
+
+                                </Grid>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn x:Name="Nazwa" >
+                        <GridViewColumnHeader  Content="Nazwa" /><!-- tu trzeba dać jeszcze behawior -->
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" >
+                                    <Image Source="{Binding icon}" Width="16" Height="16"/>
+                                    <TextBlock Text="{Binding Name}" /><!-- kolor może da się zmienić za pomocą triggera -->
+                                </StackPanel>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn x:Name="Roz" DisplayMemberBinding="{Binding Extension}" >
+                        <GridViewColumnHeader  Content="Roz." />
+                    </GridViewColumn>
+                    <GridViewColumn x:Name="SizeX" DisplayMemberBinding="{Binding size}">
+                        <GridViewColumnHeader  Content="Wielkość" />
+                    </GridViewColumn>
+                    <GridViewColumn x:Name="CatX" DisplayMemberBinding="{Binding Path}">
+                        <GridViewColumnHeader  Content="Katalog" />
+                    </GridViewColumn>
+                    <GridViewColumn x:Name="Md5X" DisplayMemberBinding="{Binding MD5}">
+                        <GridViewColumnHeader  Content="MD5" />
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+    </Grid>
+</UserControl>

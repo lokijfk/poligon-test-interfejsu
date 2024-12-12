@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Diagnostics;
-using System.Windows.Input;
 
 
 namespace poligon_inter.ViewModel;
@@ -20,13 +19,13 @@ public partial class WindowAddDBViewModel : ObservableObject
     private string? _WindowName;
     [ObservableProperty]
     private bool _isValidate = false;
- 
+
     private bool CanOK()
     {
-        _isValidate = !string.IsNullOrWhiteSpace(Name);
-        Debug.WriteLine("name:" + Name+" validate:"+ _isValidate);
-        
-        return _isValidate;//to nie działa
+        IsValidate = !string.IsNullOrWhiteSpace(Name);
+        Debug.WriteLine("name:" + Name+" validate:"+ IsValidate);
+    
+        return IsValidate;//to nie działa
         //return true;
     }
 
@@ -35,9 +34,9 @@ public partial class WindowAddDBViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanOK))]
     private async Task<bool> OnOK()
     {
-        Debug.WriteLine("XXXL = name:" + Name + " validate:" + _isValidate);
+        //Debug.WriteLine("XXXL = name:" + Name + " validate:" + _isValidate);
         // to jest wywo lane po oknie w main...
-        if (_isValidate)
+        if (IsValidate)
         {
             Close?.Invoke(this, EventArgs.Empty);
         }

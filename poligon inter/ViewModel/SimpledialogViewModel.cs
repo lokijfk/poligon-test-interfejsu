@@ -15,9 +15,6 @@ public partial class SimpledialogViewModel : ObservableObject
     [ObservableProperty]
     private string? _hint;
 
-    
-
-    
     public bool CanOnClouse()
     {
        return Name != string.Empty;

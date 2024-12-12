@@ -7,6 +7,7 @@ using System.Diagnostics;
 using poligon_inter.Model;
 using System.Windows;
 using Microsoft.Win32;
+using System.Reflection;
 
 namespace poligon_inter.ViewModel;
 
@@ -28,6 +29,7 @@ public partial class MainWindowViewModel: ObservableObject
 
     //private IFileDialogService _iFileDialog;
     #endregion pola
+
     #region ObservableProperty
 
     [ObservableProperty]
@@ -54,23 +56,23 @@ public partial class MainWindowViewModel: ObservableObject
         BrokerDB = new();
         Tree = BrokerDB.GetTree();
         iniFile = new BrokerIni();
-        SelectedViewModel = new Welcome();
+        CallMethod("Hello",null);
+         //SelectedViewModel = new Welcome();
+        //SelectedViewModel = System.Reflection.Assembly.GetExecutingAssembly().CreateInstance("Welcome");
         ContentMax = CurMainWindowState == WindowState.Normal ? "1" : "2";
-
-       //BrokerDB BrokDB = new();
 
         //trzeba zbudować menu item zależne od tego co było kliknięte prawym przyciskiem
         //ale prawdopodobnie tree będzie jedynym elementem obsługiwanym przez to menu to nie wiem czy jest sens komplikowania tego
         /*
         TVCommandList = new ObservableCollection<ContextMenuTreeView> {
-            
+        
             new ContextMenuTreeView( "Add", AddFolder ),//oo chodzi i można wyłączać jak coś nie gra :)
             new ContextMenuTreeView( "Delete", RemoveFolder )
-            
-            
+        
+        
             //new ContextMenuTreeView( "Add", AddFolder , CanExecuteEx),//oo chodzi i można wyłączać jak coś nie gra :)
             //new ContextMenuTreeView( "Delete", RemoveFolder , CanExecuteEx)
-            
+        
             };
         */
     }
@@ -96,7 +98,7 @@ public partial class MainWindowViewModel: ObservableObject
             if ((t is TreeModel<Guid>) && (t != null))
             {
                 TreeModel<Guid> SelectedItem = t as TreeModel<Guid>;
-                SelectedItem.AddChild(new TreeModel<Guid> { Name = name, IsExpanded = true, Parent = SelectedItem });                
+                SelectedItem?.AddChild(new TreeModel<Guid> { Name = name, IsExpanded = true, Parent = SelectedItem });                
                 AddCategory(name, SelectedItem);
             }
             else if (LActiveTreeModelItem != null)
@@ -105,19 +107,19 @@ public partial class MainWindowViewModel: ObservableObject
                 SelectedItem.AddChild(new TreeModel<Guid> { Name = name, IsExpanded = true, Parent = SelectedItem });                
                 AddCategory(name, SelectedItem);
             }        
-           
+       
         }
     }
 
 
     private void AddCategory(string name, TreeModel<Guid> parent)
     {
-        BrokerDB.AddCategory(name, parent);
+        BrokerDB?.AddCategory(name, parent);
     }
 
     private void RemoveCategory(TreeModel<Guid> id)
     {
-        BrokerDB.DeleteCategory(id);
+        BrokerDB?.DeleteCategory(id);
     }
 
     [RelayCommand]
@@ -127,21 +129,20 @@ public partial class MainWindowViewModel: ObservableObject
         if (RActiveTreeModelItem != null)
         {
             TreeModel<Guid>? ParentItem = RActiveTreeModelItem.Parent;
-           
+       
             if ((ParentItem != null) &&(ParentItem.Children.Count > 0))
             {
+                //Debug.WriteLine("usuwamy kategorię");
                 ParentItem.Children.Remove(RActiveTreeModelItem);
                 // dodać usuwanie elementu zbazy, ale co z zależnościami i kaskadowością?
+                RemoveCategory(RActiveTreeModelItem);
             }
-            else
-            {
-                //tu dodać okno z pytaniem czy na pewno bo to główna kategoria i można stracić dane
-                //jak będzie falxe w odpowiedzi to wtedy zrobić return z funkcji żeby nie wywalało z bazy
-                // i zmienić rodzaj metody na task
-                Tree.Remove(RActiveTreeModelItem as TreeModel);
-            }
-            RemoveCategory(RActiveTreeModelItem);
-            
+            else {
+                //tu usuwanie bazy a więc pliku
+                
+                if (Tree != null) Tree.Remove(RActiveTreeModelItem as TreeModel);
+                BrokerDB ?.DeleteDB(RActiveTreeModelItem as TreeModel);
+            }       
             RActiveTreeModelItem = null;
         }
 
@@ -157,6 +158,13 @@ public partial class MainWindowViewModel: ObservableObject
             // _ = MessageBox.Show("kliknięto: " + (t as TreeModel<Guid>).Name);
             TreeModel<Guid>? c = parameter as TreeModel<Guid>;
             LActiveTreeModelItem = c;
+            //jak tu zrobić wybieralność widoków ?? 
+            //SelectedViewModel = new Welcome();
+
+            if((c!=null)&&(c.View != string.Empty))
+            {
+                CallMethod(c.View, null);
+            }
         }
 
     }
@@ -175,7 +183,7 @@ public partial class MainWindowViewModel: ObservableObject
 
         // OpenFolderDialog openFoldrfDialog;
     }
- 
+
 
     [RelayCommand]
     private void TreeModelRBMClick(object parameter)
@@ -196,7 +204,32 @@ public partial class MainWindowViewModel: ObservableObject
 
     #endregion RelayCommand
 
+    #region private reakcja na klik katalog w drzewie
 
+    private void CallMethod(string p, object?[] x)
+    {
+        Type thisType = this.GetType();
+        if (thisType!= null)
+        {
+            MethodInfo theMethod = thisType.GetMethod(p, BindingFlags.NonPublic | BindingFlags.Instance);
+            //bez parametrów
+            if (theMethod != null) theMethod.Invoke(this, x);
+            // z  parametrami
+            //theMethod.Invoke(this, userParameters);
+        }
+    }
+
+    private void Hello()
+    {
+        SelectedViewModel = new Welcome();
+    }
+
+
+    private void Files()
+    {
+        SelectedViewModel = new Files();
+    }
+    #endregion private
 
 
     #region WindowState
@@ -242,7 +275,7 @@ public partial class MainWindowViewModel: ObservableObject
         }
     }
 
-    
+
     [ObservableProperty]
     private string _ContentMax;
 
@@ -272,7 +305,7 @@ public partial class MainWindowViewModel: ObservableObject
         get => iniFile.ExtenderIsExpanded;
         set => SetProperty(iniFile.ExtenderIsExpanded, value, iniFile, (u, n) => u.ExtenderIsExpanded = n);
     }
-    
+
     public WindowState CurMainWindowState
     {
         get => iniFile.CurMainWindowState;
@@ -305,7 +338,7 @@ public partial class MainWindowViewModel: ObservableObject
 
     #endregion WindowState
 
-    
+
     #region RelayCommand Task
 
     [RelayCommand]
@@ -317,7 +350,7 @@ public partial class MainWindowViewModel: ObservableObject
             WindowName = "Utwórz nową bazę danych",
             Hint = "Nazwa bazy"
         };
-              
+          
         object? view = new WindowAddDB
         {
             DataContext = DC
@@ -327,11 +360,12 @@ public partial class MainWindowViewModel: ObservableObject
 
         //Debug.WriteLine("Dialog was closed, the CommandParameter used to close it was: " + (result ?? "NULL")+" - " + DC.Name);
         //to poniżej można przenieść do metody ClosedEventHandler
-        Debug.WriteLine("result : " + (bool)result);
+        //Debug.WriteLine("result : " + (bool)result);
+        // czy jak doda obsługę błędów  to wypadną te ostrzeżenia ??
         if ((bool)result)
         {
             //return DC.Name;
-            if (DC.Name != string.Empty)
+            if ((BrokerDB != null)&&(DC.Name != string.Empty))
             {
                 //Debug.WriteLine("nazwa jest : " + DC.Name);
                 //tu robimy bazę danych, sprawdzić wcześniej czy nie ma juz takiej
@@ -341,14 +375,16 @@ public partial class MainWindowViewModel: ObservableObject
                     int id = db.AddCategory(DC.Name);
                     Tree.Add(new TreeModel { Id = id, Name = DC.Name });
                 }*/
-                BrokerDB.AddDB(DC.Name);
-                Tree.Add(new TreeModel { Id = 0, Name = DC.Name });
+                var item = BrokerDB.CreateDB(DC.Name);
+                if((Tree != null)&&(item != null)) Tree.Add(item);
+                //Tree.Add(new TreeModel { Id = 0, Name = DC.Name, IsExpanded = true });
+
             }
         }     
-        
+    
     }
 
-    
+    /*
     private async Task OnShowCD()
     {
         var vm = new WindowAddDBViewModel
@@ -375,7 +411,7 @@ public partial class MainWindowViewModel: ObservableObject
         Debug.WriteLine("result : " + (result ?? "NULL"));
 
     }
-
+    
 
     #region okna testowe
     private async Task ShowMessage(MessageBoxXViewModel DC)
@@ -386,7 +422,7 @@ public partial class MainWindowViewModel: ObservableObject
         };
 
         object? result = await DialogHost.Show(view, "RootDialog", null, null, null);
-        
+    
     }
 
 
@@ -402,15 +438,16 @@ public partial class MainWindowViewModel: ObservableObject
         object? result = await DialogHost.Show(view,"RootDialog",null,null, ClosedEventHandler);
 
         //Debug.WriteLine("Dialog was closed, the CommandParameter used to close it was: " + (result ?? "NULL")+" - " + DC.Name);
-        
-        if ((bool)result)
+    
+        if ((result != null)&&(bool)result)
         {
             return DC.Name;
         }
             return "";        
     }
+    
     #endregion okna testowe
-
+    */
     private void ClosingEventHandler(object sender, DialogClosingEventArgs eventArgs)
     {
         //to jest opcjonalne, na razie zostawiam może jeszcze wykozystam

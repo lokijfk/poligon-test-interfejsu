@@ -332,7 +332,7 @@ internal class IniFile: IDisposable
         }
         return "";
     }
-    
+
     public bool GetBoolValue(string section, string key)
     {
         string x = GetValue(section, key);
@@ -342,7 +342,7 @@ internal class IniFile: IDisposable
         //return Convert.ToInt32(x);
         //return true
     }
-    
+
 
     /// <summary>
     /// zwraca zawartość całej sekcji w postaci obiektu Dictionary<string,string>
@@ -567,10 +567,9 @@ internal class IniFile: IDisposable
     public void Dispose()
     {
         SaveIni();
-        
+    
         ((IDisposable)ListAdw).Dispose();
 
         // throw new NotImplementedException();
     }
 }
-

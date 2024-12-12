@@ -1,6 +1,5 @@
 ﻿using Dapper;
 using Microsoft.Data.Sqlite;
-using poligon_inter.ViewModel;
 using System.Collections.ObjectModel;
 using System.Data;
 using System.IO;
@@ -21,7 +20,7 @@ public class DBSQLite : IDisposable
 
     private SqliteConnection s_conn;
 
-    
+
     private string DBName
     {
         get =>  s_conn.Query<string>(@"SELECT wartosc FROM slowniki Where nazwa = 'DBname'").FirstOrDefault();
@@ -259,11 +258,10 @@ public class DBSQLite : IDisposable
     }
 
     #endregion Files
-    
-    
+
+
     public void Dispose()
     {
         ((IDisposable)GetDB).Dispose();
     }
 }
-

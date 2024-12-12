@@ -1,10 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections.ObjectModel;
-using System.ComponentModel.DataAnnotations.Schema;
 
-
-
-namespace poligon_inter.ViewModel;
+namespace poligon_inter.Model;
 
 
 public partial class TreeModel<T1> :ObservableObject
@@ -13,23 +10,22 @@ public partial class TreeModel<T1> :ObservableObject
     public TreeModel()
     {
         this.IsSelected = false;
-        _children = new ObservableCollection<TreeModel<T1>>();
+        Children = new ObservableCollection<TreeModel<T1>>();
+        Name = string.Empty;
     }
 
     #region fields
     //dodać pole "ukryty" i zaimplementować w drzewie, dodać przycisk pokazyjący okno z ukrytymi i możliwością odkrycia
+    [ObservableProperty]    
+    private int _Id = -1;
+    [ObservableProperty]    
+    public int _ParentID = -1; 
     [ObservableProperty]
-    [Column("Id")]
-    private int _Id;
-    [ObservableProperty]
-    [Column("ParentID")]
-    public int _ParentID; 
-    [ObservableProperty]
-    private TreeModel<T1> _Parent;
+    private TreeModel<T1>? _Parent;
     [ObservableProperty]
     private ObservableCollection<TreeModel<T1>> _children;
-    [ObservableProperty]
-    private T1 _selectedValue;
+    //[ObservableProperty]
+    //private T1? _selectedValue;
     [ObservableProperty]
     private string _Name;
     [ObservableProperty]
@@ -39,11 +35,11 @@ public partial class TreeModel<T1> :ObservableObject
     [ObservableProperty]
     private bool _isRightSelected;
     [ObservableProperty]
-    private string _view
+    private string _view = string.Empty;
     #endregion fields
 
     #region properties
-    
+
 
 
     /*
@@ -53,7 +49,11 @@ public partial class TreeModel<T1> :ObservableObject
         //set { _children = value}
     }
     */
-
+    public string GetKeyDB
+    {
+        get;
+        set;
+    } = string.Empty;
 
 
 
@@ -63,13 +63,13 @@ public partial class TreeModel<T1> :ObservableObject
 
     public override string ToString()
     {
-        return this._Name;
+        return this.Name;
     }
 
     public void AddChild(TreeModel<T1> child)
     {
-        child._Parent = this;
-        this._children.Add(child);
+        child.Parent = this;
+        this.Children.Add(child);
     }
 
     #endregion methods
@@ -80,28 +80,29 @@ public partial class TreeModel<T1> :ObservableObject
     // operują na nim ale się do niego nie odwołują
     // część przestaje być urzeteczna z powodu wykozystania zachowań "behaviors" co jest bardziej praktyczne
     // dodać odnajdywanie pierszego elementu- będzie on nazwą bazy w drzewie
-    public static TreeModel<T1> GetNodeById(T1 id, IEnumerable<TreeModel<T1>> nodes)
+    /*
+    public static TreeModel<T1>? GetNodeById(T1 id, IEnumerable<TreeModel<T1>> nodes)
     {
         foreach (var node in nodes)
         {
-            if (node.SelectedValue.Equals(id))
+            if ((node.SelectedValue != null) &&(node.SelectedValue.Equals(id)))
                 return node;
 
-            var foundChild = GetNodeById(id, node._children);
+            var foundChild = GetNodeById(id, node.Children);
             if (foundChild != null)
                 return foundChild;
         }
         return null;
     }
 
-    public static TreeModel<T1> GetSelectedNode(IEnumerable<TreeModel<T1>> nodes)
+    public static TreeModel<T1>? GetSelectedNode(IEnumerable<TreeModel<T1>> nodes)
     {
         foreach (var node in nodes)
         {
             if (node.IsSelected)
                 return node;
 
-            var selectedChild = GetSelectedNode(node._children);
+            var selectedChild = GetSelectedNode(node.Children);
             if (selectedChild != null)
                 return selectedChild;
         }
@@ -111,10 +112,10 @@ public partial class TreeModel<T1> :ObservableObject
 
     public static void ExpandParentNodes(TreeModel<T1> node)
     {
-        if (node._Parent != null)
+        if (node.Parent != null)
         {
-            node._Parent.IsExpanded = true;
-            ExpandParentNodes(node._Parent);
+            node.Parent.IsExpanded = true;
+            ExpandParentNodes(node.Parent);
         }
     }
 
@@ -123,10 +124,10 @@ public partial class TreeModel<T1> :ObservableObject
         foreach (var node in nodes)
         {
             node.IsExpanded = isExpanded;
-            ToggleExpanded(node._children, isExpanded);
+            ToggleExpanded(node.Children, isExpanded);
         }
     }
-
+    */
     #endregion static methods
 
 }
@@ -134,4 +135,3 @@ public partial class TreeModel<T1> :ObservableObject
 public class TreeModel : TreeModel<Guid>
 {
 }
-

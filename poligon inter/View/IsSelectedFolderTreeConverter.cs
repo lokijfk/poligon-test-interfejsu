@@ -1,21 +1,22 @@
-﻿using poligon_inter.ViewModel;
+﻿using poligon_inter.Model;
 using System.Globalization;
 using System.Windows.Data;
 
-namespace poligon_inter.View;
-
-[ValueConversion(typeof(TreeModel<Guid>), typeof(bool))]
-public class IsSelectedFolderTreeConverter : IValueConverter
+namespace poligon_inter.View
 {
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    [ValueConversion(typeof(TreeModel<Guid>), typeof(bool))]
+    public class IsSelectedFolderTreeConverter : IValueConverter
     {
-        // throw new NotImplementedException();
-        TreeModel<Guid> Element = (TreeModel<Guid>)value;
-        return (Element != null ?true : false) ;
-    }
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            // throw new NotImplementedException();
+            TreeModel<Guid> Element = (TreeModel<Guid>)value;
+            return (Element != null ?true : false) ;
+        }
 
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-         throw new NotImplementedException();
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+             throw new NotImplementedException();
+        }
     }
 }

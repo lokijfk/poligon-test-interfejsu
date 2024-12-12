@@ -6,9 +6,11 @@
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:local="clr-namespace:poligon_inter"
         xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
-        xmlns:vm="clr-namespace:poligon_inter.ViewModel"
+        
         xmlns:system="clr-namespace:System;assembly=mscorlib"
         xmlns:view="clr-namespace:poligon_inter.View"
+        xmlns:vm="clr-namespace:poligon_inter.ViewModel"
+        xmlns:model="clr-namespace:poligon_inter.Model"
         d:DataContext="{d:DesignInstance vm:MainWindowViewModel}"
         mc:Ignorable="d"
         Title="Poligon" 
@@ -137,19 +139,21 @@
 
                             <TreeView  x:Name="Tree"   ItemsSource="{Binding Tree}">
                                 <TreeView.ItemTemplate>
-                                    <HierarchicalDataTemplate DataType="{x:Type vm:TreeModel}" ItemsSource="{Binding Children}" >
+                                    <HierarchicalDataTemplate DataType="{x:Type model:TreeModel}" ItemsSource="{Binding Children}" >
                                         <StackPanel>
                                             <TextBlock Text="{Binding Name}" Foreground="White"/>
                                             <i:Interaction.Triggers>
                                                 <i:EventTrigger EventName="PreviewMouseRightButtonDown" >
                                                     <!--i:CallMethodAction TargetObject="{Binding}" MethodName="KlikRightCommand"/-->
-                                                    <i:InvokeCommandAction Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, Path=DataContext.TreeModelRBMClickCommand}" 
+                                                    <i:InvokeCommandAction Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, 
+                                                        AncestorType={x:Type Window}}, Path=DataContext.TreeModelRBMClickCommand}" 
                                                     CommandParameter="{Binding}"  />
                                                     <!--i:ChangePropertyAction PropertyName="{Binding IsRightSelected}" Value="true" /-->
                                                 </i:EventTrigger>
                                                 <i:EventTrigger EventName="MouseLeftButtonDown" >
                                                     <!-- dodać previewM ...  -->
-                                                    <i:InvokeCommandAction Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, Path=DataContext.TreeModelLBMClickCommand}" 
+                                                    <i:InvokeCommandAction Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, 
+                                                        AncestorType={x:Type Window}}, Path=DataContext.TreeModelLBMClickCommand}" 
                                                         CommandParameter="{Binding}"  />
                                                 </i:EventTrigger>
                                             </i:Interaction.Triggers>

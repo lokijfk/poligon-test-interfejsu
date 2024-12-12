@@ -50,7 +50,8 @@
                 <Button.Style>
                     <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
                         <Setter Property="IsEnabled" 
-                                Value="{Binding ElementName=TextNam, Path=Text, Converter={StaticResource IsTextNotEmptyConverter}}"/>
+                                Value="{Binding ElementName=TextNam, Path=Text, 
+                            Converter={StaticResource IsTextNotEmptyConverter}}"/>
                     </Style>
                 </Button.Style>
             </Button>

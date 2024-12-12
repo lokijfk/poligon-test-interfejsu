@@ -2,16 +2,17 @@
 
 using System.Windows.Controls;
 
-namespace poligon_inter.View;
-
-public class IsCheckedValidationRule : ValidationRule
+namespace poligon_inter.View
 {
-    public override ValidationResult Validate(object value, CultureInfo cultureInfo)
+    public class IsCheckedValidationRule : ValidationRule
     {
-        if (value is bool && (bool)value)
+        public override ValidationResult Validate(object value, CultureInfo cultureInfo)
         {
-            return ValidationResult.ValidResult;
+            if (value is bool && (bool)value)
+            {
+                return ValidationResult.ValidResult;
+            }
+            return new ValidationResult(false, "Option must be checked");
         }
-        return new ValidationResult(false, "Option must be checked");
     }
 }

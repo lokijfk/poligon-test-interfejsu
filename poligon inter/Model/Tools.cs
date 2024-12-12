@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 
 
 namespace poligon_inter.Model;
+
 // zmienić na PathHelper
 static internal class Tools
 {
@@ -25,7 +26,7 @@ static internal class Tools
         get {
             return Assembly.GetExecutingAssembly().GetName().Name.ToString();
         }
-        
+    
         //sProductName;
         //return string.Empty;
     }
@@ -65,6 +66,7 @@ static internal class Tools
     }
 
     //to będzie do wywalenia
+    /*
     static public DBSQLite? GetDataBase(string inis = null)
     {
         //trzeba tworzyć katalog o ile go nie ma i nie ma potrzeby sprawdzania czy jest
@@ -74,7 +76,7 @@ static internal class Tools
         DBSQLite DB = new(GetUserAppDataPath, inis);
         return DB;
     }
-
+    */
     static public string CalculateMD5Sting(string input)
     {
 
@@ -101,7 +103,7 @@ static internal class Tools
         }
     }
 
-    static private string Prdouble(double size)
+    static public string Prdouble(double size)
     {
         double kb = 0.0;
         string og = string.Empty;
@@ -124,4 +126,3 @@ static internal class Tools
         //return string.Empty;
     }
 }
-
