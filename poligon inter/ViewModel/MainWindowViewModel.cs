@@ -8,6 +8,9 @@ using poligon_inter.Model;
 using System.Windows;
 using Microsoft.Win32;
 using System.Reflection;
+using System.Windows.Media;
+using System.IO;
+
 
 namespace poligon_inter.ViewModel;
 
@@ -15,22 +18,29 @@ public partial class MainWindowViewModel: ObservableObject
 {
 
     #region pola
-    private DBSQLite? DB = null; // mieić nazwę obiektu na SQLBroker będzie mniej myląda
-    private BrokerDB? BrokerDB = null;
-    public ObservableCollection<TreeModel>? Tree { get; set; }
-    //public ObservableCollection<ContextMenuTreeView> TVCommandList { get; set; }
+    
+    private BrokerDB BrokerDB ;    
 
-    private readonly BrokerIni? iniFile = null;
-    //public MainWindowViewModel(IniFile iniFile) => this.iniFile = iniFile;
-
-    private TreeModel<Guid>? RActiveTreeModelItem = null;
-    [ObservableProperty]
-    private TreeModel<Guid>? _lActiveTreeModelItem = null;
+    private readonly BrokerIni iniFile;
+    private TreeModel? RActiveTreeModelItem = null;
+    //LA - jest odbierany również  w pasku ToolBar,
+    //jak tego nie ma to nie pokazuje błędu ale ikona cały czas się pali
+    private ImageSource BlinkIcom { get; set; } = Tools.CreateEmtpyBitmapSource();
 
     //private IFileDialogService _iFileDialog;
     #endregion pola
 
     #region ObservableProperty
+
+    // jest wykozystywane w widoku, przy drzewie??
+    [ObservableProperty]
+    private TreeModel? _lActiveTreeModelItem = null; 
+
+    //public ObservableCollection<ContextMenuTreeView> TVCommandList { get; set; }
+
+    public ObservableCollection<TreeModel>? Tree { get; set; }
+
+    public ObservableCollection<FilesIO> FilesList { get; set; } = [];
 
     [ObservableProperty]
     private double _MaxHeight = SystemParameters.MaximizedPrimaryScreenHeight;
@@ -56,7 +66,7 @@ public partial class MainWindowViewModel: ObservableObject
         BrokerDB = new();
         Tree = BrokerDB.GetTree();
         iniFile = new BrokerIni();
-        CallMethod("Hello",null);
+        SelectedViewModel = CallMethod("Hello");
          //SelectedViewModel = new Welcome();
         //SelectedViewModel = System.Reflection.Assembly.GetExecutingAssembly().CreateInstance("Welcome");
         ContentMax = CurMainWindowState == WindowState.Normal ? "1" : "2";
@@ -82,11 +92,11 @@ public partial class MainWindowViewModel: ObservableObject
     [RelayCommand]
     private void AddFolder(object t)
     {
-        var name = "AAAXXd-new";
+        var name = "AAAXXd-new";//do zmiany na okno z możliwością wpisania nazwy folderu/kategorii
         if (RActiveTreeModelItem != null)
         {
             //wywołać okno do wpisania nazwy, ale czy to nie trzeba będzie zmienić metodę na async?
-            RActiveTreeModelItem.AddChild(new TreeModel<Guid> { Name = name, IsExpanded = true, Parent = RActiveTreeModelItem });
+            RActiveTreeModelItem.AddChild(new TreeModel { Name = name, IsExpanded = true, Parent = RActiveTreeModelItem });
             AddCategory(name, RActiveTreeModelItem);
             RActiveTreeModelItem = null;
         }
@@ -95,16 +105,16 @@ public partial class MainWindowViewModel: ObservableObject
             //TreeModel<Guid>? SelectedItem = TreeModel.GetSelectedNode(Tree);
             // to jakoś poprawić
             //Debug.WriteLine("Znalazłem Element: ");
-            if ((t is TreeModel<Guid>) && (t != null))
+            if ((t is TreeModel) && (t != null))
             {
-                TreeModel<Guid> SelectedItem = t as TreeModel<Guid>;
-                SelectedItem?.AddChild(new TreeModel<Guid> { Name = name, IsExpanded = true, Parent = SelectedItem });                
+                TreeModel SelectedItem = t as TreeModel;
+                SelectedItem?.AddChild(new TreeModel { Name = name, IsExpanded = true, Parent = SelectedItem });                
                 AddCategory(name, SelectedItem);
             }
             else if (LActiveTreeModelItem != null)
             {
-                TreeModel<Guid>? SelectedItem = LActiveTreeModelItem as TreeModel<Guid>;
-                SelectedItem.AddChild(new TreeModel<Guid> { Name = name, IsExpanded = true, Parent = SelectedItem });                
+                TreeModel SelectedItem = LActiveTreeModelItem as TreeModel;
+                SelectedItem.AddChild(new TreeModel { Name = name, IsExpanded = true, Parent = SelectedItem });                
                 AddCategory(name, SelectedItem);
             }        
        
@@ -112,12 +122,12 @@ public partial class MainWindowViewModel: ObservableObject
     }
 
 
-    private void AddCategory(string name, TreeModel<Guid> parent)
+    private void AddCategory(string name, TreeModel parent)
     {
         BrokerDB?.AddCategory(name, parent);
     }
 
-    private void RemoveCategory(TreeModel<Guid> id)
+    private void RemoveCategory(TreeModel id)
     {
         BrokerDB?.DeleteCategory(id);
     }
@@ -128,7 +138,7 @@ public partial class MainWindowViewModel: ObservableObject
 
         if (RActiveTreeModelItem != null)
         {
-            TreeModel<Guid>? ParentItem = RActiveTreeModelItem.Parent;
+            TreeModel? ParentItem = RActiveTreeModelItem.Parent;
        
             if ((ParentItem != null) &&(ParentItem.Children.Count > 0))
             {
@@ -140,8 +150,8 @@ public partial class MainWindowViewModel: ObservableObject
             else {
                 //tu usuwanie bazy a więc pliku
                 
-                if (Tree != null) Tree.Remove(RActiveTreeModelItem as TreeModel);
-                BrokerDB ?.DeleteDB(RActiveTreeModelItem as TreeModel);
+                if (Tree != null) Tree.Remove(RActiveTreeModelItem);
+                BrokerDB.DeleteDB(RActiveTreeModelItem);
             }       
             RActiveTreeModelItem = null;
         }
@@ -151,21 +161,22 @@ public partial class MainWindowViewModel: ObservableObject
     [RelayCommand]
     private void TreeModelLBMClick(object parameter)
     {
-        if ((parameter is TreeModel<Guid>) && (parameter != null))
+        if ((parameter is TreeModel) && (parameter != null))
         {
             //działa tu zrobić wybór widoku dla klikniętego elementu
             //tu można dodać pole lokalne LActiveTreeModelItem
             // _ = MessageBox.Show("kliknięto: " + (t as TreeModel<Guid>).Name);
-            TreeModel<Guid>? c = parameter as TreeModel<Guid>;
+            TreeModel c = parameter as TreeModel;
             LActiveTreeModelItem = c;
             //jak tu zrobić wybieralność widoków ?? 
             //SelectedViewModel = new Welcome();
 
             if((c!=null)&&(c.View != string.Empty))
             {
-                CallMethod(c.View, null);
-            }
+                SelectedViewModel = CallMethod(c.View);
+            }else SelectedViewModel = CallMethod("Hello");
         }
+        //Debug.WriteLine("LBM klik");
 
     }
 
@@ -188,16 +199,16 @@ public partial class MainWindowViewModel: ObservableObject
     [RelayCommand]
     private void TreeModelRBMClick(object parameter)
     {
-
-        if ((parameter is TreeModel<Guid>) &&(parameter != null))
+        if ((parameter is TreeModel) &&(parameter != null))
         {
-            TreeModel<Guid>? c = parameter as TreeModel<Guid>;
+            TreeModel c = parameter as TreeModel;
             RActiveTreeModelItem = c;
         }
         else
         {
             RActiveTreeModelItem = null;
         }
+       // Debug.WriteLine("RBM klik");
     }
 
 
@@ -206,28 +217,34 @@ public partial class MainWindowViewModel: ObservableObject
 
     #region private reakcja na klik katalog w drzewie
 
-    private void CallMethod(string p, object?[] x)
+    private object? CallMethod(string p, object?[]? x = null)
     {
-        Type thisType = this.GetType();
+        Type thisType = GetType();
         if (thisType!= null)
-        {
+        {   
             MethodInfo theMethod = thisType.GetMethod(p, BindingFlags.NonPublic | BindingFlags.Instance);
             //bez parametrów
-            if (theMethod != null) theMethod.Invoke(this, x);
+            return theMethod?.Invoke(this, x);
             // z  parametrami
             //theMethod.Invoke(this, userParameters);
         }
+        return null;
     }
 
-    private void Hello()
+    private object Hello()
     {
-        SelectedViewModel = new Welcome();
+         
+        return new Welcome();
     }
 
 
-    private void Files()
+    private object Files()
     {
-        SelectedViewModel = new Files();
+        //FilesViewModel vm = new FilesViewModel { SelectedItem = RActiveTreeModelItem };\
+        List<FilesIO> files = BrokerDB.GetFiles(BrokerDB.GetTreeDBName(LActiveTreeModelItem));
+        if (files != null)
+        FilesList = new ObservableCollection<FilesIO>(files);
+            return new Files();            
     }
     #endregion private
 
@@ -357,8 +374,7 @@ public partial class MainWindowViewModel: ObservableObject
         };
 
         object? result = await DialogHost.Show(view, "RootDialog");
-
-        //Debug.WriteLine("Dialog was closed, the CommandParameter used to close it was: " + (result ?? "NULL")+" - " + DC.Name);
+                
         //to poniżej można przenieść do metody ClosedEventHandler
         //Debug.WriteLine("result : " + (bool)result);
         // czy jak doda obsługę błędów  to wypadną te ostrzeżenia ??
@@ -460,5 +476,211 @@ public partial class MainWindowViewModel: ObservableObject
     }
 
     #endregion RelayCommand Task
+
+    #region Files
+
+    public async Task ScanPath(string path)
+    {
+        await ScanPath(path, true);
+    }
+
+    /// <summary>
+    /// skanuje wybrany katalog i dodaje pliki z zakresu do bazy
+    /// zakres - to pliki o rozszeżeniach określonych jako możliwe do gromadznia w tej bzie
+    /// </summary>
+    /// <param name="path">ścieżka do katalogu</param>
+    /// <param name="branch">skanuj podkatalogi</param>
+    public async Task ScanPath(string path, bool branch)
+    {
+        if (!string.IsNullOrWhiteSpace(path))
+        {
+            path = path.Trim();
+        }
+        //if (string.IsNullOrWhiteSpace(PathC)) return;
+        if (!string.IsNullOrEmpty(path))
+        {
+            //if(Tools.AccessDirectory(path) && Tools.AtrDir(path))
+            try
+            {
+                var imFiles = Directory.EnumerateFiles(path);
+                var imDirectories = Directory.EnumerateDirectories(path);
+
+                AddFilesToList(path);
+                //if (branch)
+                    foreach (var imDir in imDirectories)
+                    {
+                        DirectoryInfo directoryInfo = new(imDir);
+
+                        //if (Tools.AccessDirectory(imDir) && Tools.AtrDir(imDir))
+                        if (Tools.AtrDir(imDir))
+                        {
+                            await ScanPath(imDir, true);
+                            //Debug.WriteLine("-- jest: " + imDir);
+                        }
+                        /*Debug.WriteLine("-- jest: " + imDir+ " AccessDirectory: "+ Tools.AccessDirectory(imDir)
+                            + "AtrDir: "+ Tools.AtrDir(imDir)
+                            );*/
+                    }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
+        }
+    }
+
+
+    private void AddFilesToList(string path)
+    {
+        //Debug.WriteLine("-- jest: " + path);
+        var imFiles = Directory.EnumerateFiles(path);
+        FileInfo finfo;
+        string ext, name;
+        foreach (var imFile in imFiles.Select((value, i) => (value, i)))
+        {
+            /*
+            ext = System.IO.Path.GetExtension(imFile.value);
+            name = System.IO.Path.GetFileName(imFile.value);
+            finfo = new FileInfo(imFile.value);
+            FilesList.Add(new FilesIO()
+            {
+                Id = imFile.i,
+                Name = name,
+                Extension = ext,
+                Path = path,
+                Icon = BlinkIcom,
+                Size = Tools.Prdouble(finfo.Length),
+                RealSize = finfo.Length.ToString(),
+                MD5 = "0"
+            });*/
+            AddFileToDB(imFile.value, path);
+
+            //var LX = BrokerDB.GetFiles(BrokerDB.GetTreeDBName(LActiveTreeModelItem));
+
+        }
+        List<FilesIO> files = BrokerDB.GetFiles(BrokerDB.GetTreeDBName(LActiveTreeModelItem));
+        if (files != null)
+        {
+            FilesList.Clear();
+            
+            //FilesList = new ObservableCollection<FilesIO>(files);// to nie działa tak jakby  było potrzebne odświerzeniz einterfejsu
+            files.ToList().ForEach(FilesList.Add);
+
+        }
+        /*
+        Application.Current.Dispatcher.BeginInvoke(() =>
+        {
+            List<FilesIO> files = BrokerDB.GetFiles(BrokerDB.GetTreeDBName(LActiveTreeModelItem));
+            if (files != null)
+                FilesList = new ObservableCollection<FilesIO>(files);
+        });*/
+
+    }
+
+
+    /// <summary>
+    /// dodaje wybrany plik do bazy
+    /// </summary>
+    /// <param name="pathFile">ścieżka z plikiem</param>
+    /// <param name="path">ścieżka bez pliku</param>
+    /// <returns>czy dodano plik?</returns>
+    public bool AddFileToDB(string pathFile, string path)
+    {
+        //var imFiles = Directory.EnumerateFiles(path);
+        FileInfo finfo = new FileInfo(pathFile);
+        string Ext, Name;
+        Ext = System.IO.Path.GetExtension(pathFile);
+        Name = System.IO.Path.GetFileName(pathFile);
+        string PAthX = System.IO.Path.GetDirectoryName(pathFile);
+        //Debug.WriteLine("path to the file: " + PAthX);
+        //if (RActiveTreeModelItem == null)
+         //   Debug.WriteLine("nie ma RBM");
+        string DBName = BrokerDB.GetTreeDBName(LActiveTreeModelItem);
+        //dalej dodawannie katalogu do DB o ile go nie ma
+        // ... zwraca id katalogu i jest dodawany plik o ile go nie ma 
+        //int idDirectory = BrokerDB.AddDirectory(path, DBName);
+        //Debug.WriteLine("DBName: " + DBName);
+        BrokerDB.AddFile(pathFile, DBName);
+
+        return false;
+    }
+
+    /// <summary>
+    /// wywołuje okno pomocnicze do wyboru plików
+    /// </summary>
+    /// <param name="path"></param>
+    public async void OpenWindowPath(string path)
+    {
+        /*
+        //ObservableCollection<FilesIO> Files = [];
+        Path = path.Trim();
+        if (!string.IsNullOrEmpty(path))
+        {
+            //Files = new ObservableCollection<FilesIO>();
+            try
+            {
+                var imFiles = Directory.EnumerateFiles(Path);
+                var imDirectories = Directory.EnumerateDirectories(Path);
+
+                foreach (var imDir in imDirectories)
+                {
+
+                    Files.Add(new FilesIO() { Name = imDir.Substring(imDir.LastIndexOf('\\') + 1), Extension = "DIR", Path = Path, icon = "", size = "0", realSize = "0", MD5 = "0" });
+                }
+
+                FileInfo finfo;
+                string ext, name;
+                foreach (var imFile in imFiles.Select((value, i) => (value, i)))
+                {
+                    ext = System.IO.Path.GetExtension(imFile.value);
+                    name = System.IO.Path.GetFileName(imFile.value);
+                    finfo = new FileInfo(imFile.value);
+                    ///* przeliczanie MD5 za długo trwa tu trzeba coś innego wymyśleć
+                    Files.Add(new FilesIO() { id = imFile.i, Name = name, Extension = ext, Path = Path, icon = "", size = Tools.Prdouble(finfo.Length), realSize = finfo.Length.ToString(), MD5 = "0" });
+                    // AllowUIToUpdate(); to nie zdaje tutaj efektu
+                    //Widok.ItemsSource = items;
+                }
+            }
+            catch (Exception ex) 
+            {
+                Debug.WriteLine(ex);
+            }
+
+
+            await FilesFindWindow(Files);
+        */
+        await FilesFindWindow(path);// tu powinno być inne okno do wybierania plikó
+                                    //tu powinno być dodawanie wybranych plików do bazy
+                                    // i tu ponowne ładowanie plików z bazy do listy ewdług założonego sortowania
+
+        // }
+    }
+
+    /// <summary>
+    /// okno pomocnicze do wyboru plików
+    /// </summary>
+    /// <param name="path"></param>
+    /// <returns></returns>
+    //[RelayCommand]
+    private async Task FilesFindWindow(string path)
+    {
+        FilesFindViewModel FFVM = new()
+        {
+            PathC = path
+        };
+        //FFVM.PathSearch(string.Empty);
+        object? view = new FilesFind
+        {
+            DataContext = FFVM
+        };
+
+        var result = await DialogHost.Show(view, "RootDialog");
+
+        //Debug.WriteLine("Dialog was closed, the CommandParameter used to close it was: " + (result ?? "NULL")+" - " + DC.Name);
+        //to poniżej można przenieść do metody ClosedEventHandler
+        //Debug.WriteLine("result : " + result);
+    }
+
+    #endregion Files
 
 }

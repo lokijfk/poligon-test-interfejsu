@@ -4,58 +4,41 @@ using System.Collections.ObjectModel;
 namespace poligon_inter.Model;
 
 
-public partial class TreeModel<T1> :ObservableObject
+public partial class TreeModel :ObservableObject
 {
-
+    /*
     public TreeModel()
     {
         this.IsSelected = false;
-        Children = new ObservableCollection<TreeModel<T1>>();
+        Children = [];
         Name = string.Empty;
     }
-
-    #region fields
+    */
+    #region properties
+    
     //dodać pole "ukryty" i zaimplementować w drzewie, dodać przycisk pokazyjący okno z ukrytymi i możliwością odkrycia
     [ObservableProperty]    
     private int _Id = -1;
     [ObservableProperty]    
     public int _ParentID = -1; 
     [ObservableProperty]
-    private TreeModel<T1>? _Parent;
+    private TreeModel? _Parent = null;
     [ObservableProperty]
-    private ObservableCollection<TreeModel<T1>> _children;
+    private ObservableCollection<TreeModel> _children = [];
     //[ObservableProperty]
     //private T1? _selectedValue;
     [ObservableProperty]
-    private string _Name;
+    private string _Name = string.Empty;
     [ObservableProperty]
-    private bool _isSelected;
+    private bool _isSelected = false;
     [ObservableProperty]
-    private bool _isExpanded;
+    private bool _isExpanded = false;
     [ObservableProperty]
-    private bool _isRightSelected;
+    private bool _isRightSelected = false;
     [ObservableProperty]
     private string _view = string.Empty;
-    #endregion fields
-
-    #region properties
-
-
-
-    /*
-    public IEnumerable<TreeModel<T1>> Children
-    {
-        get { return _children; }
-        //set { _children = value}
-    }
-    */
-    public string GetKeyDB
-    {
-        get;
-        set;
-    } = string.Empty;
-
-
+    [ObservableProperty]
+    private string _GetKeyDB = string.Empty;
 
     #endregion properties
 
@@ -66,7 +49,7 @@ public partial class TreeModel<T1> :ObservableObject
         return this.Name;
     }
 
-    public void AddChild(TreeModel<T1> child)
+    public void AddChild(TreeModel child)
     {
         child.Parent = this;
         this.Children.Add(child);
@@ -131,7 +114,8 @@ public partial class TreeModel<T1> :ObservableObject
     #endregion static methods
 
 }
-
+/*
 public class TreeModel : TreeModel<Guid>
 {
 }
+*/

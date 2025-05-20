@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:poligon_inter.View"
+             xmlns:converters="clr-namespace:poligon_inter.View.Converters"
              xmlns:system="clr-namespace:System;assembly=mscorlib"
              xmlns:wpf="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
              mc:Ignorable="d" 
@@ -11,38 +12,65 @@
              >
     <UserControl.Resources>
         <ResourceDictionary>
-            <local:IsTextNotEmptyConverter x:Key="IsTextNotEmptyConverter"/>
+            <converters:IsTextNotEmptyConverter x:Key="IsTextNotEmptyConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid Margin="16">
         <Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition />
+            <RowDefinition /><!-- to pasek tytułowy, na razie pusty -->
+            <RowDefinition /><!-- tu ma ją być dane bazy -->
+            <RowDefinition /><!-- tu są przyciski zakończenia-->
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
+        <StackPanel Grid.Row="1" Margin="0,0,0,5">
         <Label Content="{Binding WindowName}" />       
-        <TextBox Grid.Row="1"
-             Margin="0,6,0,0"
-             wpf:HintAssist.Hint="Wpisz nazwę nowej bazy"
-             FontSize="18"
-             Style="{StaticResource MaterialDesignFloatingHintTextBox}"
-                 x:Name="TextNam">
-            <TextBox.Text>
-                <Binding Path="Name" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
-                    <Binding.ValidationRules>
-                        <local:NotEmptyValidationRule ValidatesOnTargetUpdated="True" />
-                    </Binding.ValidationRules>
-                </Binding>
-            </TextBox.Text>
-        </TextBox>
-
-        <StackPanel Grid.Row="2"
+            <TextBox 
+                 Margin="0,6,0,0"
+                 wpf:HintAssist.Hint="Wpisz nazwę nowej bazy"
+                 FontSize="18"
+                 Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                     x:Name="TextNam">
+                <TextBox.Text>
+                    <Binding Path="Name" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                        <Binding.ValidationRules>
+                            <converters:NotEmptyValidationRule ValidatesOnTargetUpdated="True" />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+        </StackPanel>
+        <StackPanel Grid.Row="2" Margin=" 0,5,0,0">
+            <StackPanel>
+                <ComboBox>
+                    <ComboBoxItem IsSelected="True">tu możesz wybrać schemat</ComboBoxItem>
+                    <ComboBoxItem>filmy</ComboBoxItem>
+                    <ComboBoxItem>książki</ComboBoxItem>
+                </ComboBox>
+            </StackPanel>
+            <StackPanel>
+                <Label>wprowadź określenie dla zakładki reprezentującej osoby. Możę to być autor, aktor lub wykonawca</Label>
+                <CheckBox>tego nie pokazuj</CheckBox><TextBox></TextBox>
+            </StackPanel>
+            <StackPanel>
+                <Label>wprowadź określenie dla zakładki reprezentującej utwór. Możę to być muzyka,film, książka lub po prostu tytuły</Label>
+                <TextBox></TextBox>
+            </StackPanel>
+            <!-- lista rozwijalna z schematami -->
+            <!-- tu ma być osoba - aktor, wykonawca, autor-->
+            <!-- utwór - film, muzyka, książka,...-->
+            <!-- rok wydania - ...? -->
+            <!-- studio, wydawca, seria-->
+            <!--- pliki - ...?  zy tu da się dodać jakieć filtry ??-->
+            <!-- gatunek, kategoria, widownia - to chyba w utworze, cy osobno ? -->
+            <!-- pliki akceptowane -->
+        </StackPanel>
+        
+        <StackPanel Grid.Row="3"
                 Margin="0,16,0,0"
                 Orientation="Horizontal">
             <!-- tylko wpf:DialogHost.CloseDialogCommand zwraca wartości z Button.CommandParameter-->
-            <Button Command="{x:Static wpf:DialogHost.CloseDialogCommand}"                  
-              IsDefault="True"
-              >
+            <Button Command="{x:Static wpf:DialogHost.CloseDialogCommand}" 
+                    IsDefault="True" >
                 <Button.CommandParameter>
                     <system:Boolean>True</system:Boolean>
                 </Button.CommandParameter>

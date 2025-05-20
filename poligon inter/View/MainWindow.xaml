@@ -9,6 +9,7 @@
         
         xmlns:system="clr-namespace:System;assembly=mscorlib"
         xmlns:view="clr-namespace:poligon_inter.View"
+        xmlns:converters="clr-namespace:poligon_inter.View.Converters"
         xmlns:vm="clr-namespace:poligon_inter.ViewModel"
         xmlns:model="clr-namespace:poligon_inter.Model"
         d:DataContext="{d:DesignInstance vm:MainWindowViewModel}"
@@ -23,7 +24,7 @@
         >
     <Window.Resources>
         <ResourceDictionary>
-            <view:IsSelectedFolderTreeConverter x:Key="IsSelectedFolderTreeConverter"/>
+            <converters:IsSelectedFolderTreeConverter x:Key="IsSelectedFolderTreeConverter"/>
         </ResourceDictionary>
     </Window.Resources>
     <WindowChrome.WindowChrome>
@@ -42,7 +43,7 @@
                            TargetObject="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}" />
         </i:EventTrigger>
     </i:Interaction.Triggers>
-    <Border CornerRadius="5" BorderBrush="Gray" BorderThickness="2" Padding="6" Background="Transparent">
+    <Border CornerRadius="5" BorderBrush="Indigo" BorderThickness="2" Padding="6" Background="Transparent">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto" MaxHeight="40"/> <!-- pasek tytułowy -->                
@@ -107,7 +108,7 @@
                             <Button.Style>
                                 <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
                                     <Setter Property="IsEnabled" 
-                                Value="{Binding LActiveTreeModelItem, Converter={StaticResource IsSelectedFolderTreeConverter}}"/>
+                                    Value="{Binding LActiveTreeModelItem, Converter={StaticResource IsSelectedFolderTreeConverter}}"/>
                                 </Style>
                             </Button.Style>
                         </Button>
@@ -141,7 +142,8 @@
                                 <TreeView.ItemTemplate>
                                     <HierarchicalDataTemplate DataType="{x:Type model:TreeModel}" ItemsSource="{Binding Children}" >
                                         <StackPanel>
-                                            <TextBlock Text="{Binding Name}" Foreground="White"/>
+                                            <TextBlock Text="{Binding Name}" Foreground="White" Visibility="Visible" />
+                                            <!--TextBox Text="{Binding Name, Mode=TwoWay}" Foreground="White" Visibility="Hidden"/-->
                                             <i:Interaction.Triggers>
                                                 <i:EventTrigger EventName="PreviewMouseRightButtonDown" >
                                                     <!--i:CallMethodAction TargetObject="{Binding}" MethodName="KlikRightCommand"/-->

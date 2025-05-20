@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows;
 
@@ -6,15 +8,36 @@ namespace poligon_inter.Model;
 
 class BrokerIni
 {
-    private IniFile? iniFile = null;
+    //albo to zmienić na dictionary, albo dodać dictionary na inne pliki ini
+    // a tu zostawić taki na tylko to 
+    //na pewno dojedzie ini z kolorami ustawianymi przez urzytkownika 
+    // i może drugi ze schematami bazy danych, co też będzie mógł modyfikować urzytkownik
+    private readonly IniFile iniFile;
 
-    private IniFile? GetIni()
+
+
+    static public IniFile LoadIni(string inis)
+    {
+        IniFile ini;
+        if (File.Exists(Directory.GetCurrentDirectory() + "\\" + inis))
+        {
+            ini = new IniFile(Directory.GetCurrentDirectory() + "\\" + inis);
+        }
+        else
+        {
+            ini = new IniFile(Tools.GetUserAppDataPath + "\\" + inis);
+        }
+        return ini;
+    }
+
+    static public IniFile LoadIniProject() => LoadIni(Tools.GetProjectName + ".ini");
+    private IniFile GetIni()
     {
         if (iniFile == null)
         {
             //to przerobić, powinno być już lokalnie a nie w tools
             // tools należy rozłozyć na części składowe i usunąć
-            return Tools.LoadIniProject();
+            return LoadIniProject();
         }
         return iniFile;
     }
@@ -72,21 +95,11 @@ class BrokerIni
                 case "Minimized": { return WindowState.Minimized; }
                 default: { return WindowState.Normal; }
             }
-            return WindowState.Normal;
-            //return iniFile.GetValue(GetCurrentMethod()).ToEnum();
+            //return WindowState.Normal;
+            
         }
         set 
         {
-            /*
-            if (value.ToString() == "Maximized")
-            {
-                iniFile.SetValue("General", "LastWidth", iniFile.GetValue("WindowWidth"));
-                iniFile.SetValue("General", "LastHeihgt", iniFile.GetValue("WindowHeight"));
-            }else if(value.ToString() == "Normal")
-            {
-                iniFile.SetValue("General", "WindowWidth", iniFile.GetValue("LastWidth"));
-                iniFile.SetValue("General", "WindowHeight" , iniFile.GetValue("LastHeihgt"));
-            }*/
             iniFile.SetValue("General", GetCurrentMethod(), value.ToString());
         }
     }
@@ -125,8 +138,14 @@ class BrokerIni
     {
         var st = new StackTrace();
         var sf = st.GetFrame(1);
-        return sf.GetMethod().Name.Substring(4);
+        if (IsNotNull(sf))
+        {
+            var sx = sf.GetMethod();
+            if (IsNotNull(sx)) return sx.Name.Substring(4);
+        }
+        return string.Empty;
     }
+    private static bool IsNotNull([NotNullWhen(true)] object? obj) => obj != null;
     private int GetIntValue(string mert) => iniFile.GetIniValue("General", mert);
     private void SetIntValue(string met, int val) => iniFile.SetValue("General", met, val.ToString());
     private bool GetBoolValue(string mert) => iniFile.GetBoolValue("General", mert);

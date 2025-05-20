@@ -1,6 +1,7 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using System.IO;
+using System.Windows.Documents;
+using System.Xml.Linq;
 
 
 namespace poligon_inter.Model;
@@ -318,7 +319,8 @@ internal class IniFile: IDisposable
     public int GetIniValue(string section, string key)
     {
         string x = GetValue(section, key);
-        if ((x == null) || (x == string.Empty)) { return -1; }
+        if ((x == null) || (x == string.Empty)) return -1;//throw new ArgumentNullException("wartość jest pusta lub nie istnieje", nameof(key));
+        
         return Convert.ToInt32(x);
     }
 

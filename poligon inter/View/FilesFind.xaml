@@ -6,22 +6,26 @@
              xmlns:system="clr-namespace:System;assembly=mscorlib"
              xmlns:wpf="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
              xmlns:local="clr-namespace:poligon_inter.View"
+             xmlns:converters="clr-namespace:poligon_inter.View.Converters"
              xmlns:vm="clr-namespace:poligon_inter.ViewModel"
              xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:i ="http://schemas.microsoft.com/xaml/behaviors"
              mc:Ignorable="d" 
              Height="400" MinWidth="400"
              d:DataContext="{d:DesignInstance vm:FilesFindViewModel}"
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="450" d:DesignWidth="800"
+             Name="FFile"
+             >
     <i:Interaction.Triggers>
         <!-- dodać przewijanie kółkiem myszy-->
         <i:EventTrigger EventName="Loaded">
-            <i:InvokeCommandAction Command="{Binding onLoadedCommand}" />
+            <i:InvokeCommandAction Command="{Binding LoadedCommand}" />
         </i:EventTrigger>
     </i:Interaction.Triggers>
     <UserControl.Resources>
         <ResourceDictionary>
-            <local:IsNotDirConverter x:Key="IsNotDirConverter"/>
+            <!--converters:IsNotDirConverter x:Key="IsNotDirConverter"/-->
+            <converters:IsNotDirConverter x:Key="IsNotDirConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
     <Border CornerRadius="5" BorderBrush="Gray" BorderThickness="2" Padding="6" Background="Transparent">
@@ -38,37 +42,47 @@
             <!--ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Hidden" 
                       Name="ScImVi" VerticalScrollBarVisibility="Auto" 
                       Focusable="false"-->
-            <ListView Grid.Row="1" Margin="10"   x:Name="Widok" ItemsSource="{Binding Files}" >
+            <ListView Grid.Row="1" Margin="10"   x:Name="Widok" ItemsSource="{Binding FilesList}" >
                     <ListView.View>
                         <GridView x:Name="listaX">
                             <GridViewColumn x:Name="buttonsX" >
                                 <GridViewColumnHeader  Content="" />
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                    <CheckBox IsChecked="{Binding select, Mode=TwoWay}"/>
-                                    <!--
-                                    Visibility="{Binding Extension,
-                                           Converter={StaticResource IsNotDirConverter}   }"/-->                                        
+                                    <CheckBox IsChecked="{Binding Select, Mode=TwoWay}"/>
+                                    <!-- Visibility="{Binding Extension, Converter={StaticResource IsNotDirConverter}   }"/-->                                        
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
                             <GridViewColumn x:Name="Nazwa" >
-                                <GridViewColumnHeader  Content="Nazwa" />
+                                <GridViewColumnHeader  Content="Nazwa" x:Name="HeadeNazwa" MinHeight="10" MinWidth="60"/>
                                 <!-- tu trzeba dać jeszcze behawior -->
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
+                                    <ContentControl >
+                                        <!--  Width="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=GridViewColumnHeader}, Path=Width}" -->
                                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" >
                                             <!--Image Source="{Binding icon}" Width="16" Height="16"/-->
                                             <TextBlock Text="{Binding Name}" />
+
                                             <!-- kolor może da się zmienić za pomocą triggera -->
                                         </StackPanel>
-                                    </DataTemplate>
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="MouseDoubleClick">
+                                                <i:InvokeCommandAction Command="{Binding Path=DataContext.ReLoadCommand,
+                                                    ElementName=FFile}" 
+                                                    CommandParameter="{Binding}"/>
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
+                                    </ContentControl>
+                                </DataTemplate>
                                 </GridViewColumn.CellTemplate>
+
                             </GridViewColumn>
                             <GridViewColumn x:Name="Roz" DisplayMemberBinding="{Binding Extension}" >
                                 <GridViewColumnHeader  Content="Roz." />
                             </GridViewColumn>
-                            <GridViewColumn x:Name="SizeX" DisplayMemberBinding="{Binding size}">
+                            <GridViewColumn x:Name="SizeX" DisplayMemberBinding="{Binding Size}">
                                 <GridViewColumnHeader  Content="Wielkość" />
                             </GridViewColumn>
                             <GridViewColumn x:Name="CatX" DisplayMemberBinding="{Binding Path}">

@@ -7,7 +7,7 @@
              xmlns:local="clr-namespace:poligon_inter.View"
              xmlns:vm="clr-namespace:poligon_inter.ViewModel"
              mc:Ignorable="d" 
-             d:DataContext="{d:DesignInstance vm:FilesViewModel}"
+             d:DataContext="{d:DesignInstance vm:MainWindowViewModel}"
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
         <Grid.RowDefinitions>
@@ -15,12 +15,12 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <ToolBar  Grid.Row="0">
-            <Button x:Name="FindFiles" ToolTip="wybierz katalog do skanowania" Click="FindFiles_Click">
+            <Button x:Name="FindFiles" ToolTip="przeszukaj katalog" Click="FindFiles_Click">
                 <md:PackIcon Kind="FileFind" />
                 <!--Image Source="/resources/ico/FolderOpened.png" Width="16" Height="16"/-->
             </Button>
 
-            <Button x:Name="openWindow" >
+            <Button x:Name="ScanFolder" ToolTip="Wybierz katalog do przeskanowania" Click="ScanFolder_Click">
                 <md:PackIcon Kind="FileSearch" />
                 <!--Image Source="/resources/ico/FolderOpened.png" Width="16" Height="16"/-->
             </Button>
@@ -35,9 +35,9 @@
         </ToolBar>
 
         <ListView Margin="10" Grid.Row="1"  x:Name="Widok" 
-                  ItemsSource="{Binding Files}"
-                  
-                  ><!-- ale nie wiem jak wyświetlać warónkowo, czyli to co chcę żebyu było-->
+                  ItemsSource="{Binding FilesList}"    
+                  >
+            <!-- ale nie wiem jak wyświetlać warónkowo, czyli to co chcę żebyu było-->
             <!--ListView.View>
                 <GridView>
                     <GridViewColumn Header="Nazwa" DisplayMemberBinding="{Binding Name}"/>
@@ -53,7 +53,7 @@
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <Grid>
-                                    <TextBlock Text="{Binding id}"  Visibility="Hidden"/>
+                                    <TextBlock Text="{Binding Id}"  Visibility="Hidden"/>
                                     <Button BorderBrush="Transparent" Background="Transparent" >
                                         <md:PackIcon Kind="Plus" Foreground="Green"/>
                                     </Button>
@@ -67,7 +67,7 @@
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" >
-                                    <Image Source="{Binding icon}" Width="16" Height="16"/>
+                                    <Image Source="{Binding Icon}" Width="16" Height="16" Margin="0,0,4,0"/>
                                     <TextBlock Text="{Binding Name}" /><!-- kolor może da się zmienić za pomocą triggera -->
                                 </StackPanel>
                             </DataTemplate>
@@ -76,7 +76,7 @@
                     <GridViewColumn x:Name="Roz" DisplayMemberBinding="{Binding Extension}" >
                         <GridViewColumnHeader  Content="Roz." />
                     </GridViewColumn>
-                    <GridViewColumn x:Name="SizeX" DisplayMemberBinding="{Binding size}">
+                    <GridViewColumn x:Name="SizeX" DisplayMemberBinding="{Binding Size}">
                         <GridViewColumnHeader  Content="Wielkość" />
                     </GridViewColumn>
                     <GridViewColumn x:Name="CatX" DisplayMemberBinding="{Binding Path}">

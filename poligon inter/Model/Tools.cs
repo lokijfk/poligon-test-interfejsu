@@ -1,6 +1,11 @@
 ﻿using System.IO;
 using System.Reflection;
 using System.Security.Cryptography;
+using System.Windows.Media.Imaging;
+using System.Windows.Media;
+using System.Security.AccessControl;
+using System.Security.Principal;
+using System.Diagnostics;
 
 
 namespace poligon_inter.Model;
@@ -9,74 +14,141 @@ namespace poligon_inter.Model;
 static internal class Tools
 {
     //private static ModelPB model = null;
-    public static string GetUserAppDataPath
-    {
-        get { 
-        //string sProductName = Assembly.GetExecutingAssembly().GetName().Name.ToString();
-        return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\" +
+    public static string GetUserAppDataPath =>
+        
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\" +
             GetProjectName;
-        //sProductName;
-        //return string.Empty;
-        }
-    }
 
-    public static string GetProjectName
-    {
-        //string sProductName = Assembly.GetExecutingAssembly().GetName().Name.ToString();
-        get {
-            return Assembly.GetExecutingAssembly().GetName().Name.ToString();
-        }
-    
-        //sProductName;
-        //return string.Empty;
-    }
+    public static string GetProjectName        
+        => Assembly.GetExecutingAssembly().GetName().Name.ToString();
 
     /// <summary>
-    /// do wywalenia - przenieść do BrokeraINI
+    /// zwraca przeroczystą bitmapę o wymarach 16x16
+    /// przerobić tak żeby wymarytrzeba było podać
+    /// </summary>
+    /// <returns></returns>
+    public static BitmapSource CreateEmtpyBitmapSource()
+    {
+        /*
+        int width = 16;
+        int height = width;
+        int stride = width / 8;
+        byte[] pixels = new byte[height * stride];
+
+        // Try creating a new image with a custom palette.
+        //List<System.Windows.Media.Color> colors = new List<System.Windows.Media.Color>();
+        //colors.Add(System.Windows.Media.Colors.Red);
+        //colors.Add(System.Windows.Media.Colors.Blue);
+        //colors.Add(System.Windows.Media.Colors.Green);
+        //BitmapPalette myPalette = new BitmapPalette(colors);
+        BitmapPalette myPalette = new BitmapPalette(new List<Color> { Colors.Transparent });
+        // Creates a new empty image with the pre-defined palette
+        BitmapSource image = BitmapSource.Create(width, height,96, 96,PixelFormats.Indexed1,
+                                                 myPalette,pixels,stride);
+        return image;*/
+        return BitmapImage.Create(16, 16, 96, 96, PixelFormats.Indexed1,
+                    new BitmapPalette(new List<Color> { Colors.Transparent }), new byte[32], 2);
+    }
+    /*
+    /// <summary>
+    /// do wywalenia - przenieść do BrokeraINI - przeniesione
     /// Zwraca plik imi o podanej nazwie umieszczony w {user}\AppData\Local\{AppName}
     /// jeżeli nie ma pliko to tworzynowy
     /// Może zwrócić plik znajdujący się w aktualnym katalogu aplikacji o ile wcześniej został tam utworzony
     /// </summary>
     /// <param name="inis"></param>
     /// <returns>zwraca obiekt IniFile lub null</returns>
-    static public IniFile? LoadIni(string inis)
+    
+    static public IniFile LoadIni(string inis)
     {
-        IniFile ini = null;
+        IniFile ini;
         if (File.Exists(Directory.GetCurrentDirectory() + "\\" + inis))
         {
-            ini = new IniFile(Directory.GetCurrentDirectory() + "\\" + inis);
-            //MessageBox.Show("jest w current");
+            ini = new IniFile(Directory.GetCurrentDirectory() + "\\" + inis);            
         }
         else
-        {
-            string localpath = GetUserAppDataPath;
-            ini = new IniFile(localpath + "\\" + inis);
+        {           
+            ini = new IniFile(GetUserAppDataPath + "\\" + inis);
         }
         return ini;
     }
 
-    static public IniFile? LoadIniP(string inis,string postfix= ".ini")
-    {
-        return Tools.LoadIni(inis + postfix);
-    }
-
-    static public IniFile? LoadIniProject()
-    {
-        return Tools.LoadIniP(Tools.GetProjectName);
-    }
-
-    //to będzie do wywalenia
-    /*
-    static public DBSQLite? GetDataBase(string inis = null)
-    {
-        //trzeba tworzyć katalog o ile go nie ma i nie ma potrzeby sprawdzania czy jest
-        // jak wczesniej jest odczytywany ini to on tworz katalog
-        if (inis == null) inis = GetProjectName;
-        System.IO.Directory.CreateDirectory(GetUserAppDataPath);
-        DBSQLite DB = new(GetUserAppDataPath, inis);
-        return DB;
-    }
+    static public IniFile LoadIniProject() => LoadIni(GetProjectName+ ".ini");
     */
+
+    /// <summary>
+    /// sprawdza czy podany katalog nie ma atrybutu "ukryty"
+    /// lub nie jest koszem albo volume inf..
+    /// </summary>
+    /// <param name="pathx">Scieżka do sprawdzenia</param>
+    /// <returns>nie jest ukryty?</returns>
+    public static bool AtrDir(string pathx)
+    {
+        if (string.IsNullOrEmpty(pathx) || !Directory.Exists(pathx)) return false;
+        bool ret = true;
+        try
+        {
+            DirectoryInfo di = new(pathx);
+            FileAttributes attributes = File.GetAttributes(pathx);
+            if ((attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
+            {
+                ret = false;
+            }
+            if ((di.Name.Equals("RECYCLE")) || (di.Name.Equals("System Volume Information")))
+            {
+                ret = false;
+            }
+        }
+        catch { return false; }
+        return ret;
+    }
+
+    /// <summary>
+    /// sprawdza czy urzytkownik może odczytać podany katalog
+    /// </summary>
+    /// <param name="path"></param>
+    /// <returns></returns>
+    public static bool AccessDirectory(string path)
+    {
+        if (string.IsNullOrEmpty(path) || !Directory.Exists(path)) return false;
+        try
+        {
+
+            DirectoryInfo di = new(path);
+            DirectorySecurity security = di.GetAccessControl(AccessControlSections.Access);
+            SecurityIdentifier users = new(WellKnownSidType.BuiltinUsersSid, null);
+            /*Debug.WriteLine("-- jest: " + path
+                + " security "+ security + " users "+ users
+
+                );*/
+            foreach (AuthorizationRule rule in security.GetAccessRules(true, true, typeof(SecurityIdentifier)))
+            {
+                /*Debug.WriteLine("-- jest w foreach - rule.IdentityReference: "+ rule.IdentityReference
+                    +" users: "+ users
+                    );*/
+                if (rule.IdentityReference == users)
+                {
+                    Debug.WriteLine("-- jestw if");
+                    FileSystemAccessRule rights = ((FileSystemAccessRule)rule);
+                    if (rights.AccessControlType == AccessControlType.Allow)
+                    {
+                        Debug.WriteLine("-- jestw if Allow");
+                        if ((FileSystemRights.Modify == (rights.FileSystemRights & FileSystemRights.Modify))
+                            || (FileSystemRights.ReadAndExecute == (rights.FileSystemRights & FileSystemRights.ReadAndExecute))
+                            )
+                            return true;
+                    }
+                }
+            }
+            return false;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    #region Not Use
     static public string CalculateMD5Sting(string input)
     {
 
@@ -125,4 +197,6 @@ static internal class Tools
         return kb.ToString("F2") + og;
         //return string.Empty;
     }
+
+    #endregion Not Use
 }

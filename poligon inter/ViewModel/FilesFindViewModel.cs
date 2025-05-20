@@ -14,7 +14,7 @@ public partial class FilesFindViewModel : ObservableObject
     /* tu dodajemy przeszukiwanie katalogu +
      * tu dodajemy listę  plików i katalogów +
      * tu dodajemu dodawanie wybranego pliku do bazy - zrobić listę osobną i z niej dodawać
-     * tu dodajemy zmianę katalogów
+     * tu dodajemy zmianę katalogów +
      * czy coś jeszcze ?
      * może być zamiast dodawnia do bazy to dodawanie do osobnej listy
      * i jak będzie ok to metoda wywołująca sama sobie doda wybrane pliki
@@ -22,19 +22,39 @@ public partial class FilesFindViewModel : ObservableObject
      * 
      */
 
-    
+
 
     [ObservableProperty]
     private string _pathC = string.Empty;
 
-    public ObservableCollection<FilesIO> Files { get; set; } = [];
+    public ObservableCollection<FilesIO> FilesList { get; set; } = [];
 
     [RelayCommand]
-    private void onLoaded()
+    private void ReLoad(object t)
+    {
+        if (t != null)
+        {
+            FilesIO f = t as FilesIO;
+            if (f.Extension == "DIR")
+            {
+                if (f.Name != ". . .")
+                {
+                    PathSearch(f.Path +@"\"+ f.Name + @"\");                    
+                }
+                else if(f.Name == ". . .")               
+                    PathSearch(f.Path[..(f.Path[..^2].LastIndexOf('\\') + 1)]);
+            }            
+        }        
+    }
+
+    [RelayCommand]
+    private void OnLoaded()
     {
         PathSearch(string.Empty);
     }
-    public void PathSearch(string path)
+    //wczytuje dane z wskazanego katalogu, dodać filtację plików
+    // ma pokazywać tylko wybrane
+    private void PathSearch(string path)
     {
         if (!string.IsNullOrWhiteSpace(path))
         {
@@ -43,19 +63,40 @@ public partial class FilesFindViewModel : ObservableObject
         //if (string.IsNullOrWhiteSpace(PathC)) return;
         if (!string.IsNullOrEmpty(PathC))
         {
-            
-            //Files = new ObservableCollection<FilesIO>();
-            //trzeba zobaczyć jak to przebudować żeby było szybsz, bo jest tragedia
-            // jak by dało się włączyć skanowanie po uruchomieniu okna to bło by git
+            FilesList.Clear();
             try
             {
                 var imFiles = Directory.EnumerateFiles(PathC);
                 var imDirectories = Directory.EnumerateDirectories(PathC);
+                if (!IsDrive(PathC))
+                {
+                    FilesList.Add(new FilesIO()
+                    {
+                        Name = ". . .",
+                        Extension = "DIR",
+                        Path = PathC,
+                        Icon = null,
+                        Size = "0",
+                        RealSize = "0",
+                        MD5 = "0"
+                    });
+
+                }
+
 
                 foreach (var imDir in imDirectories)
                 {
                     //Debug.WriteLine(imDir.Substring(imDir.LastIndexOf('\\') + 1));
-                    Files.Add(new FilesIO() { Name = imDir.Substring(imDir.LastIndexOf('\\') + 1), Extension = "DIR", Path = PathC, icon = "", size = "0", realSize = "0", MD5 = "0" });
+                    FilesList.Add(new FilesIO()
+                    {
+                        Name = imDir[(imDir.LastIndexOf('\\') + 1)..],
+                        Extension = "DIR",
+                        Path = PathC,
+                        Icon = null,
+                        Size = "0",
+                        RealSize = "0",
+                        MD5 = "0"
+                    });
                 }
 
                 FileInfo finfo;
@@ -67,7 +108,17 @@ public partial class FilesFindViewModel : ObservableObject
                     //Debug.WriteLine(name);
                     finfo = new FileInfo(imFile.value);
                     /* przeliczanie MD5 za długo trwa tu trzeba coś innego wymyśleć*/
-                    Files.Add(new FilesIO() { id = imFile.i, Name = name, Extension = ext, Path = PathC, icon = "", size = Tools.Prdouble(finfo.Length), realSize = finfo.Length.ToString(), MD5 = "0"/* CalculateMD5(imFile)*/ });
+                    FilesList.Add(new FilesIO()
+                    {
+                        Id = imFile.i,
+                        Name = name,
+                        Extension = ext,
+                        Path = PathC,
+                        Icon = null,
+                        Size = Tools.Prdouble(finfo.Length),
+                        RealSize = finfo.Length.ToString(),
+                        MD5 = "0"/* CalculateMD5(imFile)*/
+                    });
                     // AllowUIToUpdate(); to nie zdaje tutaj efektu
                     //Widok.ItemsSource = items;
                 }
@@ -82,5 +133,15 @@ public partial class FilesFindViewModel : ObservableObject
             // i tu ponowne ładowanie plików z bazy do listy ewdług założonego sortowania
 
         }
+    }
+
+    private static bool IsDrive(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path)) return false;
+        string pathX = path.Trim();
+        if (pathX.Length == 3)
+            if ((pathX[1] == ':') && (pathX[2] == '\\'))
+                return true;
+        return false;
     }
 }
